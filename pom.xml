@@ -13,7 +13,8 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -24,7 +25,7 @@
 
     <groupId>org.apache.seatunnel</groupId>
     <artifactId>seatunnel</artifactId>
-    <version>2.3.3</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <name>SeaTunnel :</name>
@@ -58,8 +59,10 @@
         <seatunnel.config.shade.version>2.1.1</seatunnel.config.shade.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
-        <scala.version>2.11.12</scala.version>
-        <scala.binary.version>2.11</scala.binary.version>
+        <scala.version>2.12.18</scala.version>
+        <!--        <scala.version>2.11.12</scala.version>-->
+        <scala.binary.version>2.12</scala.binary.version>
+<!--        <scala.binary.version>2.11</scala.binary.version>-->
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
@@ -139,7 +142,6 @@
         <checker.qual.version>3.10.0</checker.qual.version>
         <awaitility.version>4.2.0</awaitility.version>
         <e2e.dependency.skip>true</e2e.dependency.skip>
-
     </properties>
 
     <dependencyManagement>
@@ -761,6 +763,82 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>${spotless.version}</version>
+                <configuration>
+                    <java>
+                        <excludes>
+                            <exclude>src/main/java/org/apache/seatunnel/antlr4/generated/*.*</exclude>
+                        </excludes>
+                        <googleJavaFormat>
+                            <version>1.7</version>
+                            <style>AOSP</style>
+                        </googleJavaFormat>
+                        <removeUnusedImports />
+                        <formatAnnotations />
+                        <importOrder>
+                            <order>org.apache.seatunnel.shade,org.apache.seatunnel,org.apache,org,,javax,java,\#</order>
+                        </importOrder>
+                        <replaceRegex>
+                            <name>Remove wildcard imports</name>
+                            <searchRegex>import\s+(static)*\s*[^\*\s]+\*;(\r\n|\r|\n)</searchRegex>
+                            <replacement>$1</replacement>
+                        </replaceRegex>
+                        <replaceRegex>
+                            <name>Block powermock</name>
+                            <searchRegex>import\s+org\.powermock\.[^\*\s]*(|\*);(\r\n|\r|\n)</searchRegex>
+                            <replacement>$1</replacement>
+                        </replaceRegex>
+                        <replaceRegex>
+                            <name>Block jUnit4 imports</name>
+                            <searchRegex>import\s+org\.junit\.[^jupiter][^\*\s]*(|\*);(\r\n|\r|\n)</searchRegex>
+                            <replacement>$1</replacement>
+                        </replaceRegex>
+                    </java>
+                    <pom>
+                        <sortPom>
+                            <encoding>UTF-8</encoding>
+                            <nrOfIndentSpace>4</nrOfIndentSpace>
+                            <keepBlankLines>true</keepBlankLines>
+                            <indentBlankLines>false</indentBlankLines>
+                            <indentSchemaLocation>true</indentSchemaLocation>
+                            <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+                            <sortModules>false</sortModules>
+                            <sortExecutions>false</sortExecutions>
+                            <predefinedSortOrder>custom_1</predefinedSortOrder>
+                            <expandEmptyElements>false</expandEmptyElements>
+                            <sortProperties>false</sortProperties>
+                        </sortPom>
+                        <replace>
+                            <name>Leading blank line</name>
+                            <search>project</search>
+                            <replacement>project</replacement>
+                        </replace>
+                    </pom>
+                    <markdown>
+                        <includes>
+                            <include>docs/**/*.md</include>
+                        </includes>
+                        <excludes>
+                            <exclude>**/.github/**/*.md</exclude>
+                        </excludes>
+                        <flexmark />
+                    </markdown>
+                    <upToDateChecking>
+                        <enabled>true</enabled>
+                    </upToDateChecking>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -773,32 +851,78 @@
         </license>
     </licenses>
 
-    <mailingLists>
-        <mailingList>
-            <name>SeaTunnel Developer List</name>
-            <subscribe>dev-subscribe@seatunnel.apache.org</subscribe>
-            <unsubscribe>dev-unsubscribe@seatunnel.apache.org</unsubscribe>
-            <post>dev@seatunnel.apache.org</post>
-        </mailingList>
-        <mailingList>
-            <name>SeaTunnel Commits List</name>
-            <subscribe>commits-subscribe@seatunnel.apache.org</subscribe>
-            <unsubscribe>commits-unsubscribe@seatunnel.apache.org</unsubscribe>
-            <post>commits@seatunnel.apache.org</post>
-        </mailingList>
-    </mailingLists>
+    <!--    <mailingLists>-->
+    <!--        <mailingList>-->
+    <!--            <name>SeaTunnel Developer List</name>-->
+    <!--            <subscribe>dev-subscribe@seatunnel.apache.org</subscribe>-->
+    <!--            <unsubscribe>dev-unsubscribe@seatunnel.apache.org</unsubscribe>-->
+    <!--            <post>dev@seatunnel.apache.org</post>-->
+    <!--        </mailingList>-->
+    <!--        <mailingList>-->
+    <!--            <name>SeaTunnel Commits List</name>-->
+    <!--            <subscribe>commits-subscribe@seatunnel.apache.org</subscribe>-->
+    <!--            <unsubscribe>commits-unsubscribe@seatunnel.apache.org</unsubscribe>-->
+    <!--            <post>commits@seatunnel.apache.org</post>-->
+    <!--        </mailingList>-->
+    <!--    </mailingLists>-->
 
     <scm>
-        <connection>scm:git:https://github.com/apache/seatunnel.git</connection>
-        <developerConnection>scm:git:https://github.com/apache/seatunnel.git</developerConnection>
-        <url>https://github.com/apache/seatunnel</url>
-        <tag>2.3.3</tag>
+        <connection>scm:git:https://github.com/AfterShip/seatunnel.git</connection>
+        <developerConnection>scm:git:https://github.com/AfterShip/seatunnel.git</developerConnection>
+        <url>https://github.com/AfterShip/seatunnel</url>
+        <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/apache/seatunnel/issues</url>
+        <url>https://github.com/AfterShip/seatunnel/issues</url>
     </issueManagement>
+
+    <repositories>
+        <repository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/groups/public</url>
+        </repository>
+        <repository>
+            <id>sonatype-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>automizely-nexus-public</id>
+            <url>https://nexus.automizely.org/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <id>automizely-nexus-release</id>
+            <url>https://nexus.automizely.org/repository/maven-releases/</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>automizely-nexus-snapshots</id>
+            <url>https://nexus.automizely.org/repository/maven-snapshots/</url>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>automizely-nexus-releases</id>
+            <url>https://nexus.automizely.org/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>automizely-nexus-snapshots</id>
+            <url>https://nexus.automizely.org/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <profiles>
         <profile>

@@ -111,6 +111,7 @@ public class SparkRuntimeEnvironment implements RuntimeEnvironment {
             builder.enableHiveSupport();
         }
         this.sparkSession = builder.getOrCreate();
+        createMetric();
         createStreamingContext();
         return this;
     }
@@ -148,6 +149,12 @@ public class SparkRuntimeEnvironment implements RuntimeEnvironment {
             this.streamingContext =
                     new StreamingContext(sparkSession.sparkContext(), Seconds.apply(duration));
         }
+    }
+
+    private void createMetric() {
+        this.sparkSession
+                .sparkContext()
+                .addSparkListener(new SparkMetricsListener(this.sparkSession));
     }
 
     protected boolean checkIsContainHive(Config config) {
