@@ -15,19 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.seatunnel.example.spark.v2;
+package org.apache.seatunnel.connectors.seatunnel.bigquery.serialize;
 
-import org.apache.seatunnel.core.starter.exception.CommandException;
+import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 
-import java.io.FileNotFoundException;
-import java.net.URISyntaxException;
+public interface SeaTunnelRowDeserializer {
 
-public class SeaTunnelApiExample {
-
-    public static void main(String[] args)
-            throws FileNotFoundException, URISyntaxException, CommandException {
-        String configurePath = args.length > 0 ? args[0] : "/examples/spark.batch_bigquery.json";
-//        String configurePath = args.length > 0 ? args[0] : "/examples/spark.batch.conf";
-        ExampleUtils.builder(configurePath);
-    }
+    SeaTunnelRow deserialize(BigQueryRecord record);
 }
