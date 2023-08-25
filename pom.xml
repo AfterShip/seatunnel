@@ -59,8 +59,10 @@
         <seatunnel.config.shade.version>2.1.1</seatunnel.config.shade.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
-        <scala.version>2.11.12</scala.version>
-        <scala.binary.version>2.11</scala.binary.version>
+        <scala.version>2.12.18</scala.version>
+        <!--        <scala.version>2.11.12</scala.version>-->
+        <scala.binary.version>2.12</scala.binary.version>
+<!--        <scala.binary.version>2.11</scala.binary.version>-->
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
@@ -140,7 +142,6 @@
         <checker.qual.version>3.10.0</checker.qual.version>
         <awaitility.version>4.2.0</awaitility.version>
         <e2e.dependency.skip>true</e2e.dependency.skip>
-
     </properties>
 
     <dependencyManagement>
@@ -850,32 +851,78 @@
         </license>
     </licenses>
 
-    <mailingLists>
-        <mailingList>
-            <name>SeaTunnel Developer List</name>
-            <subscribe>dev-subscribe@seatunnel.apache.org</subscribe>
-            <unsubscribe>dev-unsubscribe@seatunnel.apache.org</unsubscribe>
-            <post>dev@seatunnel.apache.org</post>
-        </mailingList>
-        <mailingList>
-            <name>SeaTunnel Commits List</name>
-            <subscribe>commits-subscribe@seatunnel.apache.org</subscribe>
-            <unsubscribe>commits-unsubscribe@seatunnel.apache.org</unsubscribe>
-            <post>commits@seatunnel.apache.org</post>
-        </mailingList>
-    </mailingLists>
+    <!--    <mailingLists>-->
+    <!--        <mailingList>-->
+    <!--            <name>SeaTunnel Developer List</name>-->
+    <!--            <subscribe>dev-subscribe@seatunnel.apache.org</subscribe>-->
+    <!--            <unsubscribe>dev-unsubscribe@seatunnel.apache.org</unsubscribe>-->
+    <!--            <post>dev@seatunnel.apache.org</post>-->
+    <!--        </mailingList>-->
+    <!--        <mailingList>-->
+    <!--            <name>SeaTunnel Commits List</name>-->
+    <!--            <subscribe>commits-subscribe@seatunnel.apache.org</subscribe>-->
+    <!--            <unsubscribe>commits-unsubscribe@seatunnel.apache.org</unsubscribe>-->
+    <!--            <post>commits@seatunnel.apache.org</post>-->
+    <!--        </mailingList>-->
+    <!--    </mailingLists>-->
 
     <scm>
-        <connection>scm:git:https://github.com/apache/seatunnel.git</connection>
-        <developerConnection>scm:git:https://github.com/apache/seatunnel.git</developerConnection>
-        <url>https://github.com/apache/seatunnel</url>
+        <connection>scm:git:https://github.com/AfterShip/seatunnel.git</connection>
+        <developerConnection>scm:git:https://github.com/AfterShip/seatunnel.git</developerConnection>
+        <url>https://github.com/AfterShip/seatunnel</url>
         <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/apache/seatunnel/issues</url>
+        <url>https://github.com/AfterShip/seatunnel/issues</url>
     </issueManagement>
+
+    <repositories>
+        <repository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/groups/public</url>
+        </repository>
+        <repository>
+            <id>sonatype-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>automizely-nexus-public</id>
+            <url>https://nexus.automizely.org/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <id>automizely-nexus-release</id>
+            <url>https://nexus.automizely.org/repository/maven-releases/</url>
+        </repository>
+        <repository>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>automizely-nexus-snapshots</id>
+            <url>https://nexus.automizely.org/repository/maven-snapshots/</url>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>automizely-nexus-releases</id>
+            <url>https://nexus.automizely.org/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>automizely-nexus-snapshots</id>
+            <url>https://nexus.automizely.org/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <profiles>
         <profile>
