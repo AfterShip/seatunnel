@@ -26,10 +26,10 @@ public class IntInjectFunction implements ClickhouseFieldInjectFunction {
             throws SQLException {
         if (value instanceof Byte) {
             statement.setByte(index, (Byte) value);
+
         } else if (value instanceof Short) {
             statement.setShort(index, (Short) value);
-        } else if (value instanceof Boolean) {
-            statement.setBoolean(index, (Boolean) value);
+
         } else {
             statement.setInt(index, (Integer) value);
         }
