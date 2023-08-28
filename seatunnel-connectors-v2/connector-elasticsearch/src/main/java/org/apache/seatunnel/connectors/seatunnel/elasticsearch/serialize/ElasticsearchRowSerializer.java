@@ -17,50 +17,38 @@
 
 package org.apache.seatunnel.connectors.seatunnel.elasticsearch.serialize;
 
-import org.apache.seatunnel.shade.com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.seatunnel.shade.com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.common.exception.CommonErrorCode;
-import org.apache.seatunnel.connectors.seatunnel.elasticsearch.dto.ElasticsearchClusterInfo;
-import org.apache.seatunnel.connectors.seatunnel.elasticsearch.dto.IndexInfo;
+import org.apache.seatunnel.connectors.seatunnel.elasticsearch.exception.ElasticsearchConnectorErrorCode;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.exception.ElasticsearchConnectorException;
-import org.apache.seatunnel.connectors.seatunnel.elasticsearch.serialize.index.IndexSerializer;
-import org.apache.seatunnel.connectors.seatunnel.elasticsearch.serialize.index.IndexSerializerFactory;
-import org.apache.seatunnel.connectors.seatunnel.elasticsearch.serialize.type.IndexTypeSerializer;
-import org.apache.seatunnel.connectors.seatunnel.elasticsearch.serialize.type.IndexTypeSerializerFactory;
+import org.apache.seatunnel.shade.com.fasterxml.jackson.core.JsonGenerator;
+import org.apache.seatunnel.shade.com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.seatunnel.shade.com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.seatunnel.shade.com.typesafe.config.Config;
 
-import lombok.NonNull;
-
+import java.io.IOException;
+import java.io.StringWriter;
 import java.time.temporal.Temporal;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.*;
+
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.ID_FIELD_IGNORED;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.*;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.*;
 
 /** use in elasticsearch version >= 2.x and <= 8.x */
 public class ElasticsearchRowSerializer implements SeaTunnelRowSerializer {
     private final SeaTunnelRowType seaTunnelRowType;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final IndexSerializer indexSerializer;
-
-    private final IndexTypeSerializer indexTypeSerializer;
-    private final Function<SeaTunnelRow, String> keyExtractor;
+    private final Config pluginConfig;
 
     public ElasticsearchRowSerializer(
-            ElasticsearchClusterInfo elasticsearchClusterInfo,
-            IndexInfo indexInfo,
+            Config pluginConfig,
             SeaTunnelRowType seaTunnelRowType) {
-        this.indexTypeSerializer =
-                IndexTypeSerializerFactory.getIndexTypeSerializer(
-                        elasticsearchClusterInfo, indexInfo.getType());
-        this.indexSerializer =
-                IndexSerializerFactory.getIndexSerializer(indexInfo.getIndex(), seaTunnelRowType);
+        this.pluginConfig = pluginConfig;
         this.seaTunnelRowType = seaTunnelRowType;
-        this.keyExtractor =
-                KeyExtractor.createKeyExtractor(
-                        seaTunnelRowType, indexInfo.getPrimaryKeys(), indexInfo.getKeyDelimiter());
     }
 
     @Override
@@ -80,12 +68,47 @@ public class ElasticsearchRowSerializer implements SeaTunnelRowSerializer {
     }
 
     private String serializeUpsert(SeaTunnelRow row) {
-        String key = keyExtractor.apply(row);
         Map<String, Object> document = toDocumentMap(row);
+        String index = null;
+        String id = document.get(pluginConfig.getString(ID_FIELD.key())).toString();
+        ArrayList<String> filterList = new ArrayList<>();
+        if (pluginConfig.getBoolean(ID_FIELD_IGNORED.key())) {
+            filterList.add(pluginConfig.getString(ID_FIELD.key()));
+        }
+        String indexType = pluginConfig.getString(INDEX_TYPE.key());
+        if (INDEX_TYPE_CUSTOMIZE.equals(indexType)) {
+            index = pluginConfig.getString(INDEX.key());
+        } else if (INDEX_TYPE_FIELD.equals(indexType)) {
+            index = (String) document.get(pluginConfig.getString(INDEX.key()));
+            if (StringUtils.isBlank(index)) {
+                throw new ElasticsearchConnectorException(
+                        ElasticsearchConnectorErrorCode.BUSINESS_FAILED,
+                        String.format("Index must not be null or empty, index field: %s",
+                                pluginConfig.getString(INDEX.key())));
+            }
+            filterList.add(pluginConfig.getString(INDEX.key()));
+        }
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("_index", index);
+        metadata.put("_id", id);
 
         try {
-            if (key != null) {
-                Map<String, String> upsertMetadata = createMetadata(row, key);
+
+            String actionType = pluginConfig.getString(ACTION_TYPE.key());
+
+            if (actionType.equals(ACTION_TYPE_INDEX)) {
+                /**
+                 * format example: { "index" : {"_index" : "${your_index}", "_id" :
+                 * "${your_document_id}"} }\n ${your_document_json}
+                 */
+                return new StringBuilder()
+                        .append("{ \"index\" :")
+                        .append(objectMapper.writeValueAsString(metadata))
+                        .append("}")
+                        .append("\n")
+                        .append(transform(document, filterList))
+                        .toString();
+            } else {
                 /**
                  * format example: { "update" : {"_index" : "${your_index}", "_id" :
                  * "${your_document_id}"} }\n { "doc" : ${your_document_json}, "doc_as_upsert" :
@@ -93,27 +116,15 @@ public class ElasticsearchRowSerializer implements SeaTunnelRowSerializer {
                  */
                 return new StringBuilder()
                         .append("{ \"update\" :")
-                        .append(objectMapper.writeValueAsString(upsertMetadata))
+                        .append(objectMapper.writeValueAsString(metadata))
                         .append("}")
                         .append("\n")
                         .append("{ \"doc\" :")
-                        .append(objectMapper.writeValueAsString(document))
+                        .append(transform(document, filterList))
                         .append(", \"doc_as_upsert\" : true }")
                         .toString();
-            } else {
-                Map<String, String> indexMetadata = createMetadata(row);
-                /**
-                 * format example: { "index" : {"_index" : "${your_index}", "_id" :
-                 * "${your_document_id}"} }\n ${your_document_json}
-                 */
-                return new StringBuilder()
-                        .append("{ \"index\" :")
-                        .append(objectMapper.writeValueAsString(indexMetadata))
-                        .append("}")
-                        .append("\n")
-                        .append(objectMapper.writeValueAsString(document))
-                        .toString();
             }
+
         } catch (JsonProcessingException e) {
             throw new ElasticsearchConnectorException(
                     CommonErrorCode.JSON_OPERATION_FAILED,
@@ -122,9 +133,56 @@ public class ElasticsearchRowSerializer implements SeaTunnelRowSerializer {
         }
     }
 
+    private String transform(Map<String, Object> document, List<String> filterList) {
+        List<String> writeAsObjectFields = Arrays.asList((pluginConfig.hasPath(WRITE_AS_OBJECT_FIELDS.key())
+                ? pluginConfig.getString(WRITE_AS_OBJECT_FIELDS.key())
+                : "").split(","));
+        StringWriter writer = new StringWriter();
+        try (JsonGenerator generator = objectMapper.getFactory().createGenerator(writer)) {
+            generator.writeStartObject();
+            for (Map.Entry<String, Object> entry : document.entrySet()) {
+                // From all the fields in input record, write only those fields that are present in output schema
+                if (entry.getValue() == null || filterList.contains(entry.getKey())) {
+                    continue;
+                }
+                boolean writeAsObject = writeAsObjectFields.contains(entry.getKey());
+                RowToJson.write(generator, entry.getKey(), entry.getValue(),
+                        seaTunnelRowType.getFieldType(seaTunnelRowType.indexOf(entry.getKey())),
+                        writeAsObject);
+            }
+            generator.writeEndObject();
+        } catch (IOException e) {
+            throw new ElasticsearchConnectorException(
+                    ElasticsearchConnectorErrorCode.BUSINESS_FAILED,
+                    "transform failed");
+        }
+        return writer.toString();
+    }
+
     private String serializeDelete(SeaTunnelRow row) {
-        String key = keyExtractor.apply(row);
-        Map<String, String> deleteMetadata = createMetadata(row, key);
+        Map<String, Object> document = toDocumentMap(row);
+        String index = null;
+        String id = document.get(pluginConfig.getString(ID_FIELD.key())).toString();
+        ArrayList<String> filterList = new ArrayList<>();
+        if (pluginConfig.getBoolean(ID_FIELD_IGNORED.key())) {
+            filterList.add(pluginConfig.getString(ID_FIELD.key()));
+        }
+        String indexType = pluginConfig.getString(INDEX_TYPE.key());
+        if (INDEX_TYPE_CUSTOMIZE.equals(indexType)) {
+            index = pluginConfig.getString(INDEX.key());
+        } else if (INDEX_TYPE_FIELD.equals(indexType)) {
+            index = (String) document.get(pluginConfig.getString(INDEX.key()));
+            if (StringUtils.isBlank(index)) {
+                throw new ElasticsearchConnectorException(
+                        ElasticsearchConnectorErrorCode.BUSINESS_FAILED,
+                        String.format("Index must not be null or empty, index field: %s",
+                                pluginConfig.getString(INDEX.key())));
+            }
+            filterList.add(pluginConfig.getString(INDEX.key()));
+        }
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("_index", index);
+        metadata.put("_id", id);
         try {
             /**
              * format example: { "delete" : {"_index" : "${your_index}", "_id" :
@@ -132,7 +190,7 @@ public class ElasticsearchRowSerializer implements SeaTunnelRowSerializer {
              */
             return new StringBuilder()
                     .append("{ \"delete\" :")
-                    .append(objectMapper.writeValueAsString(deleteMetadata))
+                    .append(objectMapper.writeValueAsString(metadata))
                     .append("}")
                     .toString();
         } catch (JsonProcessingException e) {
@@ -159,16 +217,4 @@ public class ElasticsearchRowSerializer implements SeaTunnelRowSerializer {
         return doc;
     }
 
-    private Map<String, String> createMetadata(@NonNull SeaTunnelRow row, @NonNull String key) {
-        Map<String, String> actionMetadata = createMetadata(row);
-        actionMetadata.put("_id", key);
-        return actionMetadata;
-    }
-
-    private Map<String, String> createMetadata(@NonNull SeaTunnelRow row) {
-        Map<String, String> actionMetadata = new HashMap<>(2);
-        actionMetadata.put("_index", indexSerializer.serialize(row));
-        indexTypeSerializer.fillType(actionMetadata);
-        return actionMetadata;
-    }
 }
