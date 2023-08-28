@@ -1,0 +1,44 @@
+{
+    "env":{
+        "execution.parallelism": "1",
+        "spark.master": "local[2]",
+        "spark.executor.memory":"1024m",
+        "spark.driver.memory":"1024m",
+        "spark.driver.cores":"1",
+        "spark.executor.cores":"1",
+        "spark.executor.instances":"1",
+        "spark.hadoop.fs.AbstractFileSystem.gs.impl":"com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS",
+        "spark.hadoop.google.cloud.auth.service.account.json.keyfile":"/opt/server_account_test.json",
+        "spark.hadoop.fs.gs.project.id":"aftership-dev",
+        "spark.driver.extraClassPath": "/path/to/gcs-connector-hadoop3-2.2.17-shaded.jar",
+        "spark.executor.extraClassPath": "/path/to/jars/gcs-connector-hadoop3-2.2.17-shaded.jar"
+    },
+    "source":[
+        {
+            "config_center_url":"http://config-center.automizelyapi.me/api/v1",
+            "config_center_environment":"testing",
+            "config_center_token":"*****",
+            "plugin_name":"BigQuery",
+            "config_center_project":"dataworks.automizelyapi.org_integration",
+            "result_table_name":"bigquery_source",
+            "project": "aftership-dev",
+            "dataset": "temporary",
+            "table": "bigquery_type_test_v2",
+            "temp_bucket": "team-milk-tmp",
+            "filter": "1=1",
+            "sql": "select numeric_test,bignumeric_test,timestamp_test,date_test,datetime_test,record_test,json_test,array_test,int_test,float_test,bool_test,string_test,record_nest from `aftership-dev.temporary.bigquery_type_test_v2` where 1=1"
+        }
+    ],
+    "transform": [],
+    "sink":[
+        {
+            "schema":{
+                "fields":{
+                    "offset":"long",
+                    "body":"string"
+                }
+            },
+            "plugin_name":"Console"
+        }
+    ]
+}
