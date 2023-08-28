@@ -17,7 +17,6 @@
 
 package org.apache.seatunnel.connectors.seatunnel.clickhouse.sink.client;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.seatunnel.api.common.SeaTunnelAPIErrorCode;
 import org.apache.seatunnel.common.exception.CommonErrorCode;
 import org.apache.seatunnel.connectors.seatunnel.clickhouse.exception.ClickhouseConnectorErrorCode;
@@ -33,8 +32,6 @@ import com.clickhouse.client.ClickHouseNode;
 import com.clickhouse.client.ClickHouseRecord;
 import com.clickhouse.client.ClickHouseRequest;
 import com.clickhouse.client.ClickHouseResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,8 +43,6 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("magicnumber")
 public class ClickhouseProxy {
-
-    private static final Logger logger = LoggerFactory.getLogger(ClickhouseProxy.class);
 
     private final ClickHouseRequest<?> clickhouseRequest;
     private final ClickHouseClient client;
@@ -100,7 +95,7 @@ public class ClickhouseProxy {
                 String localTableDDL;
                 String localTableEngine;
                 try (ClickHouseResponse localTableResponse =
-                             clickhouseRequest.query(localTableSQL).executeAndWait()) {
+                        clickhouseRequest.query(localTableSQL).executeAndWait()) {
                     List<ClickHouseRecord> localTableRecords =
                             localTableResponse.stream().collect(Collectors.toList());
                     if (localTableRecords.isEmpty()) {
@@ -138,23 +133,9 @@ public class ClickhouseProxy {
         return getClickhouseTableSchema(request, table);
     }
 
-    public Map<String, String> getClickhouseTableSchema(String database, String table) {
-        ClickHouseRequest<?> request = getClickhouseConnection();
-        return getClickhouseTableSchema(request, database, table);
-    }
-
     public Map<String, String> getClickhouseTableSchema(
             ClickHouseRequest<?> request, String table) {
-        return getClickhouseTableSchema(request, null, table);
-    }
-
-    public Map<String, String> getClickhouseTableSchema(
-            ClickHouseRequest<?> request, String database, String table) {
-        String sql = String.format("desc %s", table);
-        if (StringUtils.isNotBlank(database)) {
-            sql = String.format("desc %s.%s", database, table);
-        }
-        logger.info("execute sql: " + sql);
+        String sql = "desc " + table;
         Map<String, String> schema = new LinkedHashMap<>();
         try (ClickHouseResponse response = request.query(sql).executeAndWait()) {
             response.records()
@@ -171,10 +152,10 @@ public class ClickhouseProxy {
     /**
      * Get the shard of the given cluster.
      *
-     * @param connection  clickhouse connection.
+     * @param connection clickhouse connection.
      * @param clusterName cluster name.
-     * @param database    database of the shard.
-     * @param port        port of the shard.
+     * @param database database of the shard.
+     * @param port port of the shard.
      * @return shard list.
      */
     public List<Shard> getClusterShardList(
@@ -219,7 +200,7 @@ public class ClickhouseProxy {
      * Get ClickHouse table info.
      *
      * @param database database of the table.
-     * @param table    table name of the table.
+     * @param table table name of the table.
      * @return clickhouse table info.
      */
     public ClickhouseTable getClickhouseTable(String database, String table) {
@@ -258,20 +239,10 @@ public class ClickhouseProxy {
                     engineFull,
                     dataPaths,
                     sortingKey,
-                    getClickhouseTableSchema(clickhouseRequest, database, table));
+                    getClickhouseTableSchema(clickhouseRequest, table));
         } catch (ClickHouseException e) {
             throw new ClickhouseConnectorException(
                     SeaTunnelAPIErrorCode.TABLE_NOT_EXISTED, "Cannot get clickhouse table", e);
-        }
-    }
-
-    public void executeSql(String sql) {
-        logger.info("execute sql: " + sql);
-        try (ClickHouseResponse response = clickhouseRequest.query(sql).executeAndWait()) {
-            // do nothing
-        } catch (ClickHouseException e) {
-            throw new ClickhouseConnectorException(
-                    SeaTunnelAPIErrorCode.SQL_EXECUTE_FAILED, "Cannot execute sql", e);
         }
     }
 
@@ -280,9 +251,9 @@ public class ClickhouseProxy {
      * engine. For example: change ReplicatedMergeTree to MergeTree.
      *
      * @param engine original engine of clickhouse local table
-     * @param ddl    createTableDDL of clickhouse local table
+     * @param ddl createTableDDL of clickhouse local table
      * @return createTableDDL of clickhouse local table which can support specific engine TODO:
-     * support more engine
+     *     support more engine
      */
     public String localizationEngine(String engine, String ddl) {
         if ("ReplicatedMergeTree".equalsIgnoreCase(engine)) {
