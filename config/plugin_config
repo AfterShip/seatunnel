@@ -23,4 +23,5 @@
 connector-clickhouse
 connector-elasticsearch
 connector-google-sheets
+connector-bigquery
 --end--
