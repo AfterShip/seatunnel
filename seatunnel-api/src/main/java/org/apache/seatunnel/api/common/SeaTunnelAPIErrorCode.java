@@ -29,6 +29,7 @@ public enum SeaTunnelAPIErrorCode implements SeaTunnelErrorCode {
     DATABASE_ALREADY_EXISTED("API-07", "Database already existed"),
     TABLE_ALREADY_EXISTED("API-08", "Table already existed"),
     HANDLE_SAVE_MODE_FAILED("API-09", "Handle save mode failed"),
+    SQL_EXECUTE_FAILED("API-10", "SQL execute failed"),
     ;
 
     private final String code;
