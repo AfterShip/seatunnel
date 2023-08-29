@@ -100,14 +100,27 @@ public final class InternalRowConverter extends RowConverter<InternalRow> {
             case DECIMAL:
                 return Decimal.apply((BigDecimal) field);
             case ARRAY:
+                ArrayType<?, ?> arrayType = (ArrayType<?, ?>) dataType;
+                SeaTunnelDataType<?> elementType = arrayType.getElementType();
                 // if string array, we need to covert every item in array from String to UTF8String
-                if (((ArrayType<?, ?>) dataType).getElementType().equals(BasicType.STRING_TYPE)) {
+                if (elementType.equals(BasicType.STRING_TYPE)) {
                     Object[] fields = (Object[]) field;
                     Object[] objects =
                             Arrays.stream(fields)
                                     .map(v -> UTF8String.fromString((String) v))
                                     .toArray();
                     return ArrayData.toArrayData(objects);
+                } else if (elementType.getTypeClass() == SeaTunnelRow.class) {
+                    // support array<row>
+                    Object[] fields = (Object[]) field;
+                    Object[] values = new Object[fields.length];
+                    for (int i = 0; i < fields.length; i++) {
+                        Object fieldValue = convert(fields[i], elementType);
+                        if (fieldValue != null) {
+                            values[i] = fieldValue;
+                        }
+                    }
+                    return ArrayData.toArrayData(values);
                 }
                 // except string, now only support convert boolean int tinyint smallint bigint float
                 // double, because SeaTunnel Array only support these types
