@@ -74,6 +74,7 @@
         <module>connector-rocketmq</module>
         <module>connector-paimon</module>
         <module>connector-bigquery</module>
+        <module>connector-google-cloud-storage</module>
     </modules>
 
     <dependencyManagement>
