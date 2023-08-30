@@ -1,20 +1,9 @@
 package org.apache.seatunnel.connectors.seatunnel.gcs.config;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.seatunnel.api.configuration.Option;
 import org.apache.seatunnel.api.configuration.Options;
 
-import java.util.HashMap;
-
-/**
- * @author wq.pan on 2023/8/29
- * @className SinkConfig
- * @Description
- * @Version: 1.0
- */
-public class SinkConfig {
+public class GcsSinkConfig {
 
     public static final Option<String> PROJECT_ID =
             Options.key("project_id")

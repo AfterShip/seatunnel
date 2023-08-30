@@ -5,7 +5,7 @@ import org.apache.seatunnel.api.configuration.util.OptionRule;
 import org.apache.seatunnel.api.table.factory.Factory;
 import org.apache.seatunnel.api.table.factory.TableSinkFactory;
 
-import static org.apache.seatunnel.connectors.seatunnel.gcs.config.SinkConfig.*;
+import static org.apache.seatunnel.connectors.seatunnel.gcs.config.GcsSinkConfig.*;
 
 @AutoService(Factory.class)
 public class GcsSinkFactory implements TableSinkFactory {
