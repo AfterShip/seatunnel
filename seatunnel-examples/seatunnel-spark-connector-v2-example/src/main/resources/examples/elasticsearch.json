@@ -1,0 +1,63 @@
+{
+  "env":{
+    "execution.parallelism": "1",
+    "spark.master": "local[2]",
+    "spark.executor.memory":"1024m",
+    "spark.driver.memory":"1024m",
+    "spark.driver.cores":"1",
+    "spark.executor.cores":"1",
+    "spark.executor.instances":"1",
+    "spark.hadoop.fs.AbstractFileSystem.gs.impl":"com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS",
+    "spark.hadoop.google.cloud.auth.service.account.json.keyfile":"/opt/server_account.json",
+    "spark.hadoop.fs.gs.project.id":"aftership-dev",
+    "spark.driver.extraClassPath": "/Users/wq.pan/develop/gcs-connector-hadoop3-2.2.17-shaded.jar",
+    "spark.executor.extraClassPath": "/Users/wq.pan/develop/gcs-connector-hadoop3-2.2.17-shaded.jar"
+  },
+  "source":[
+    {
+      "config_center_url":"http://config-center.automizelyapi.me/api/v1",
+      "config_center_environment":"testing",
+      "config_center_token":"cy5iUGVpQXNISVBuUXE5MVp0UjZoem5aS1M=",
+      "plugin_name":"BigQuery",
+      "config_center_project":"dataworks.automizelyapi.org_integration",
+      "result_table_name":"bigquery_source",
+      "project": "aftership-dev",
+      "dataset": "temporary",
+      "table": "bigquery_type_test_v2",
+      "temp_bucket": "team-milk-tmp",
+      "filter": "1=1",
+      "sql": "select record_test,array_test,string_test,record_array from `aftership-dev.temporary.bigquery_type_test_v2` where 1=1"
+    }
+  ],
+  "transform": [],
+  "sink":[
+    {
+      "schema": {
+        "fields": {
+          "record_test": {
+            "string_in_record": "string",
+            "array_in_record": "array<string>"
+          },
+          "array_test": "array<string>",
+          "string_test": "string",
+          "record_array": "array<>"
+        }
+      },
+      "config_center_url": "https://config-center.automizelyapi.me/api/v1",
+      "environment": "testing",
+      "config_center_token": "cy5sOWF5cGQ1UmNPRjBzTzNtSm5EVThxWUg=",
+      "bulk_size": "100000",
+      "source_table_name": "t_0",
+      "plugin_name": "Elasticsearch",
+      "config_center_project": "dataworks.automizelyapi.org_main",
+      "cluster": "trackings",
+      "index": "seatunnel_es_test_2",
+      "id_field": "string_test",
+      "id_field_ignored": "false",
+      "index_type": "customize",
+      "action_type": "index",
+      "batch_number": "1000",
+      "write_as_object_fields": ""
+    }
+  ]
+}

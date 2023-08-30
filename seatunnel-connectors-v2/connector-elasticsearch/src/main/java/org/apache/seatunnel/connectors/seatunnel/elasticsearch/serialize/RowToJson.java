@@ -284,7 +284,7 @@ public class RowToJson {
                     name, value.getClass().getSimpleName()));
         }
 
-        BasicType elementType = ((ArrayType) rowType).getElementType();
+        SeaTunnelDataType elementType = ((ArrayType) rowType).getElementType();
         SqlType elementSqlType = elementType.getSqlType();
 
         if (UNSUPPORTED_ARRAY_TYPES.contains(elementSqlType)) {
@@ -301,8 +301,12 @@ public class RowToJson {
                 throw new IllegalArgumentException(String.format("Field '%s' contains null values in its array, " +
                         "which is not allowed.", name));
             }
-            // TODO(max) seatunnel schema 不支持 Array 里面嵌套 Row
-            write(generator, name, true, element, elementType, false);
+            if (element instanceof SeaTunnelRow) {
+                SeaTunnelRow record = (SeaTunnelRow) element;
+                processRecord(generator, record, (SeaTunnelRowType) elementType);
+            } else {
+                write(generator, name, true, element, elementType, false);
+            }
         }
         generator.writeEndArray();
     }
