@@ -30,20 +30,31 @@ public class TypeConvertUtils {
                     return ArrayType.LONG_ARRAY_TYPE;
                 case FLOAT64:
                     return ArrayType.DOUBLE_ARRAY_TYPE;
-//                case NUMERIC:
-//                case BIGNUMERIC:
-//                    return ArrayType.STRING_ARRAY_TYPE;
+                    //                case NUMERIC:
+                    //                case BIGNUMERIC:
+                    //                    return ArrayType.STRING_ARRAY_TYPE;
                 case BOOL:
                     return ArrayType.BOOLEAN_ARRAY_TYPE;
-//                case DATE:
-//                    return LocalTimeType.LOCAL_DATE_TYPE;
-//                case TIME:
-//                    return LocalTimeType.LOCAL_TIME_TYPE;
-//                case TIMESTAMP:
-//                case DATETIME:
-//                    return LocalTimeType.LOCAL_DATE_TIME_TYPE;
-//                case STRUCT:
-//                    return ArrayType.STRING_ARRAY_TYPE;
+                    //                case DATE:
+                    //                    return LocalTimeType.LOCAL_DATE_TYPE;
+                    //                case TIME:
+                    //                    return LocalTimeType.LOCAL_TIME_TYPE;
+                    //                case TIMESTAMP:
+                    //                case DATETIME:
+                    //                    return LocalTimeType.LOCAL_DATE_TIME_TYPE;
+                case STRUCT:
+                    FieldList subFields = field.getSubFields();
+                    int fieldsNum = subFields.size();
+                    SeaTunnelDataType<?>[] seaTunnelDataTypes = new SeaTunnelDataType[fieldsNum];
+                    String[] fieldNames = new String[fieldsNum];
+                    for (int i = 0; i < subFields.size(); i++) {
+                        Field subField = subFields.get(i);
+                        fieldNames[i] = subField.getName();
+                        seaTunnelDataTypes[i] = TypeConvertUtils.convert(subField);
+                    }
+                    return new ArrayType<>(
+                            SeaTunnelRow[].class,
+                            new SeaTunnelRowType(fieldNames, seaTunnelDataTypes));
                 default:
                     throw new BigQueryConnectorException(
                             CommonErrorCode.UNSUPPORTED_DATA_TYPE,
@@ -62,7 +73,8 @@ public class TypeConvertUtils {
                     return BasicType.DOUBLE_TYPE;
                 case NUMERIC:
                 case BIGNUMERIC:
-                    return new DecimalType(BigQueryTypeSize.Numeric.PRECISION, BigQueryTypeSize.Numeric.SCALE);
+                    return new DecimalType(
+                            BigQueryTypeSize.Numeric.PRECISION, BigQueryTypeSize.Numeric.SCALE);
                 case BOOL:
                     return BasicType.BOOLEAN_TYPE;
                 case DATE:
@@ -85,7 +97,7 @@ public class TypeConvertUtils {
                     return new SeaTunnelRowType(fieldNames, seaTunnelDataTypes);
                 case TIME:
                     // spark sql not support time type
-//                    return LocalTimeType.LOCAL_TIME_TYPE;
+                    //                    return LocalTimeType.LOCAL_TIME_TYPE;
                 default:
                     throw new BigQueryConnectorException(
                             CommonErrorCode.UNSUPPORTED_DATA_TYPE,
