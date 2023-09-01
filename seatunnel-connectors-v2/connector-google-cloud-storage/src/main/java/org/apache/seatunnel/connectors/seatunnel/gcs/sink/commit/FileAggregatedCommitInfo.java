@@ -15,18 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.seatunnel.example.spark.v2;
+package org.apache.seatunnel.connectors.seatunnel.gcs.sink.commit;
 
-import org.apache.seatunnel.core.starter.exception.CommandException;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
-import java.io.FileNotFoundException;
-import java.net.URISyntaxException;
+import java.io.Serializable;
+import java.util.LinkedHashMap;
+import java.util.List;
 
-public class SeaTunnelApiExample {
+@Data
+@AllArgsConstructor
+public class FileAggregatedCommitInfo implements Serializable {
 
-    public static void main(String[] args)
-            throws FileNotFoundException, URISyntaxException, CommandException {
-        String configurePath = args.length > 0 ? args[0] : "/examples/fake2gcs.json";
-        ExampleUtils.builder(configurePath);
-    }
+    /**
+     * Storage the commit info in map.
+     *
+     * <p>K is the file path need to be moved to target dir.
+     *
+     * <p>V is the target file path of the data file.
+     */
+    private final LinkedHashMap<String, LinkedHashMap<String, String>> transactionMap;
+
 }

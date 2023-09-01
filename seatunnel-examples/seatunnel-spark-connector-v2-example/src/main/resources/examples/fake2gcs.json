@@ -1,0 +1,76 @@
+{
+  "env": {
+    "spark.executor.memory": "1024m",
+    "spark.driver.memory": "1024m",
+    "job.mode": "BATCH",
+    "spark.driver.cores": "1",
+    "execution.parallelism": "1",
+    "spark.executor.cores": "1",
+    "spark.executor.instances": "1",
+    "spark.dynamicAllocation.maxExecutors": "3",
+    "spark.master": "local[2]",
+    "spark.hadoop.fs.AbstractFileSystem.gs.impl":"com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS",
+    "spark.hadoop.google.cloud.auth.service.account.json.keyfile":"/opt/server_account.json",
+    "spark.hadoop.fs.gs.project.id":"aftership-dev",
+    "spark.driver.extraClassPath": "/Users/wq.pan/develop/gcs-connector-hadoop3-2.2.17-shaded.jar",
+    "spark.executor.extraClassPath": "/Users/wq.pan/develop/gcs-connector-hadoop3-2.2.17-shaded.jar"
+  },
+  "source": [
+    {
+      "schema": {
+        "fields": {
+          "name": "string",
+          "is_true": "boolean",
+          "created_at": "timestamp",
+          "float": "double"
+        }
+      },
+      "config_center_url": "https://config-center.automizelyapi.me/api/v1",
+      "environment": "testing",
+      "sheet_id": "1XlB_qKbS46H944yxAi1mMyGVC9vU59tIM8MBluShEpE",
+      "config_center_token": "*",
+      "range": "A2:Z100",
+      "result_table_name": "t_0",
+      "plugin_name": "FakeSource",
+      "sheet_name": "Sheet2",
+      "config_center_project": "dataworks.automizelyapi.org_integration",
+      "row.num": "10"
+    }
+  ],
+  "transform": [],
+  "sink": [
+    {
+      "schema": {
+        "fields": {
+          "name": "string",
+          "is_true": "boolean",
+          "created_at": "timestamp",
+          "float": "double"
+        }
+      },
+      "config_center_url": "https://config-center.automizelyapi.me/api/v1",
+      "environment": "testing",
+      "config_center_environment": "testing",
+      "config_center_token": "*",
+      "bulk_size": "100000",
+      "source_table_name": "t_0",
+      "plugin_name": "GCS",
+      "config_center_project": "dataworks.automizelyapi.org_main",
+      "cluster": "trackings",
+      "index": "seatunnel_es_test_2",
+      "id_field": "name",
+      "id_field_ignored": true,
+      "index_type": "customize",
+      "action_type": "index",
+      "batch_number": "1000",
+      "write_as_object_fields": "",
+      "path": "data-test-dataworks-streaming",
+      "is_enable_transaction": "false",
+      "location": "us",
+      "project_id": "aftership-test",
+      "format": "avro",
+      "suffix": "yyyy-MM-dd",
+      "content_type": "application/avro"
+    }
+  ]
+}
