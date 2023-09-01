@@ -1,23 +1,14 @@
 package org.apache.seatunnel.core.starter.spark.execution;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.seatunnel.api.utils.PrintUtil;
-
 import org.apache.spark.executor.InputMetrics;
 import org.apache.spark.executor.OutputMetrics;
 import org.apache.spark.executor.ShuffleReadMetrics;
 import org.apache.spark.executor.ShuffleWriteMetrics;
-import org.apache.spark.metrics.source.Source;
-import org.apache.spark.scheduler.AccumulableInfo;
-import org.apache.spark.scheduler.SparkListener;
-import org.apache.spark.scheduler.SparkListenerApplicationEnd;
-import org.apache.spark.scheduler.SparkListenerJobEnd;
-import org.apache.spark.scheduler.SparkListenerStageCompleted;
-import org.apache.spark.scheduler.SparkListenerTaskEnd;
+import org.apache.spark.scheduler.*;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.util.LongAccumulator;
-
-import com.codahale.metrics.MetricRegistry;
-import lombok.extern.slf4j.Slf4j;
 
 import java.math.RoundingMode;
 import java.text.DateFormat;
@@ -28,7 +19,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/** spark metric */
+/**
+ * spark metric
+ */
 @Slf4j
 class SparkMetricsListener extends SparkListener {
     private final Long unit = 100000000L;
@@ -39,8 +32,7 @@ class SparkMetricsListener extends SparkListener {
     private LongAccumulator stageTotalInputBytes = new LongAccumulator();
     private LongAccumulator stageTotalOutputBytes = new LongAccumulator();
     private LongAccumulator readBytes = new LongAccumulator();
-    //    private LongAccumulator recordsWritten = new LongAccumulator();
-    private Long recordsWritten = 0L;
+    private LongAccumulator recordsWritten = new LongAccumulator();
     private LongAccumulator writeBytes = new LongAccumulator();
     private LongAccumulator jvmGCTime = new LongAccumulator();
     private String executorCpuTime = "0";
@@ -127,32 +119,7 @@ class SparkMetricsListener extends SparkListener {
         recordsRead.add(shuffleReadMetrics._recordsRead().value());
         readBytes.add(shuffleReadMetrics.totalBytesRead());
         writeBytes.add(shuffleWriteMetrics._bytesWritten().value());
-
-        //
-        // recordsWritten.add(taskEnd.taskMetrics().outputMetrics()._recordsWritten().value());
-        scala.collection.Iterator<AccumulableInfo> accumulableInfoIterator =
-                taskEnd.taskInfo().accumulables().iterator();
-        while (accumulableInfoIterator.hasNext()) {
-            AccumulableInfo accumulableInfo = accumulableInfoIterator.next();
-            if (accumulableInfo.name().get().equals("number of output rows")) {
-                recordsWritten += Long.parseLong(accumulableInfo.value().get().toString());
-
-                // 自定义 metric
-                scala.collection.Iterator<Source> sourceIterator =
-                        sparkSession
-                                .sparkContext()
-                                .env()
-                                .metricsSystem()
-                                .getSourcesByName("ExecutorMetrics")
-                                .iterator();
-                while (sourceIterator.hasNext()) {
-                    Source source = sourceIterator.next();
-                    source.metricRegistry()
-                            .counter(MetricRegistry.name("recordsWrittenCustom"))
-                            .inc(recordsWritten);
-                }
-            }
-        }
+        recordsWritten.add(taskEnd.taskMetrics().outputMetrics()._recordsWritten().value());
     }
 
     /**
@@ -179,6 +146,8 @@ class SparkMetricsListener extends SparkListener {
         metrics.put("jobName", jobName);
         metrics.put("createTime", dateFormat.format(new Date(startTime)));
         metrics.put("applicationId", applicationId);
+        metrics.put("recordsRead", recordsRead.value());
+        metrics.put("recordsWritten", recordsWritten.value());
         metrics.put("jobsCompleted", jobsCompleted.get());
         metrics.put("jobRuntime(s)", jobRuntime);
         metrics.put("stagesCompleted", stagesCompleted.get());
@@ -187,8 +156,6 @@ class SparkMetricsListener extends SparkListener {
         metrics.put("stageCompletionTime(s)", completionTime);
         metrics.put("stageAttemptNumber", attemptNumber.value());
         metrics.put("executorRuntime(s)", executorRunTime);
-        metrics.put("recordsRead", recordsRead.value());
-        metrics.put("recordsWritten", recordsWritten);
         metrics.put("shuffleReadBytes", readBytes.value());
         metrics.put("shuffleWriteBytes", writeBytes.value());
         metrics.put("totalInputBytes", stageTotalInputBytes.value());
