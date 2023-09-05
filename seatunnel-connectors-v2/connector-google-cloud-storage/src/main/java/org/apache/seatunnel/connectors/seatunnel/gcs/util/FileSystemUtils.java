@@ -5,7 +5,10 @@ import com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.*;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.seatunnel.common.exception.CommonErrorCode;
 import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
 
@@ -15,12 +18,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author wq.pan on 2023/8/31
- * @className FileSystemUtils
- * @Description
- * @Version: 1.0
- */
 @Slf4j
 public class FileSystemUtils implements Serializable {
     private static final int WRITE_BUFFER_SIZE = 2048;

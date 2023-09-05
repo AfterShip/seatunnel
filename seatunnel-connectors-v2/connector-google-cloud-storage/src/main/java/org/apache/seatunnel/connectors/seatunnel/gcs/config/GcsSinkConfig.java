@@ -31,15 +31,4 @@ public class GcsSinkConfig {
                             " For example, the format 'yyyy-MM-dd-HH-mm' will result in a directory of the form '2015-01-01-20-42'. " +
                             " If not specified, nothing will be appended to the path.");
 
-    public static final Option<String> LOCATION =
-            Options.key("location")
-                    .stringType()
-                    .noDefaultValue()
-                    .withDescription("The location where the gcs bucket will get created. This value is ignored if the bucket already exists");
-
-    public static final Option<String> CONTENT_TYPE =
-            Options.key("content_type")
-                    .stringType()
-                    .noDefaultValue()
-                    .withDescription("The Content Type property is used to indicate the media type of the resource. Defaults to 'application/octet-stream'.");
 }

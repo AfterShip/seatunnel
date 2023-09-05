@@ -1,4 +1,5 @@
-package org.apache.seatunnel.format.avro.exception;
+package org.apache.seatunnel.connectors.seatunnel.gcs.exception;
+
 
 import org.apache.seatunnel.common.exception.SeaTunnelErrorCode;
 

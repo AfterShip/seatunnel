@@ -20,9 +20,7 @@ public class GcsSinkFactory implements TableSinkFactory {
         return OptionRule.builder()
                 .required(PROJECT_ID,
                         PATH,
-                        FORMAT,
-                        CONTENT_TYPE,
-                        LOCATION)
+                        FORMAT)
                 .optional(SUFFIX)
                 .build();
     }
