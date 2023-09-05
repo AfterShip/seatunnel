@@ -21,8 +21,9 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 
 import javax.annotation.Nullable;
+import java.io.Serializable;
 
-public class GcsUtils {
+public class GcsUtils implements Serializable {
 
   public static Storage getStorage(String project, @Nullable Credentials credentials) {
     StorageOptions.Builder builder = StorageOptions.newBuilder().setProjectId(project);
