@@ -25,9 +25,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -198,12 +196,21 @@ public class ParquetWriteStrategy extends AbstractWriteStrategy {
         ArrayList<Type> types = new ArrayList<>();
         SeaTunnelDataType<?>[] fieldTypes = seaTunnelRowType.getFieldTypes();
         String[] fieldNames = seaTunnelRowType.getFieldNames();
+        Map<String, Integer> columnsMap =
+                new HashMap<>(fieldNames.length);
         for (int i = 0; i < fieldNames.length; i++) {
-            Type type =
-                    seaTunnelDataType2ParquetDataType(
-                            fieldNames[i].toLowerCase(), fieldTypes[i]);
-            types.add(type);
+            columnsMap.put(fieldNames[i].toLowerCase(), i);
         }
+        List<Integer> sinkColumnsIndex = Arrays.asList(seaTunnelRowType.getFieldNames()).stream()
+                .map(column -> columnsMap.get(column.toLowerCase()))
+                .collect(Collectors.toList());
+        sinkColumnsIndex.forEach(
+                index -> {
+                    Type type =
+                            seaTunnelDataType2ParquetDataType(
+                                    fieldNames[index].toLowerCase(), fieldTypes[index]);
+                    types.add(type);
+                });
         MessageType seaTunnelRow =
                 Types.buildMessage().addFields(types.toArray(new Type[0])).named("etlSchemaBody");
         AvroSchemaConverter schemaConverter = new AvroSchemaConverter();
