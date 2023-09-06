@@ -18,6 +18,11 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.parquet.avro.AvroReadSupport.READ_INT96_AS_FIXED;
+import static org.apache.parquet.avro.AvroSchemaConverter.ADD_LIST_ELEMENT_RECORDS;
+import static org.apache.parquet.avro.AvroWriteSupport.WRITE_FIXED_AS_INT96;
+import static org.apache.parquet.avro.AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE;
+
 @Slf4j
 public class FileSystemUtils implements Serializable {
     private static final int WRITE_BUFFER_SIZE = 2048;
@@ -38,6 +43,10 @@ public class FileSystemUtils implements Serializable {
         configuration.set("fs.gs.path.encoding", "uri-path");
         configuration.set("fs.gs.working.dir", GCSPath.ROOT_DIR);
         configuration.set("fs.gs.impl.disable.cache", "true");
+        configuration.setBoolean(READ_INT96_AS_FIXED, true);
+        configuration.setBoolean(WRITE_FIXED_AS_INT96, true);
+        configuration.setBoolean(ADD_LIST_ELEMENT_RECORDS, false);
+        configuration.setBoolean(WRITE_OLD_LIST_STRUCTURE, false);
         return configuration;
     }
 
