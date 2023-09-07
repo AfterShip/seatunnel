@@ -123,8 +123,7 @@ public class ClickhouseSink
                 config.getString(ClickHouseConstants.ENVIRONMENT),
                 config.getString(ClickHouseConstants.CONFIG_CENTER_PROJECT));
 
-        // 目前暂不支持选择集群
-        String clusterName = "prod-data";
+        String clusterName = config.hasPath(CLUSTER.key()) ? config.getString(CLUSTER.key()) : "prod-data";
         ProxyContext proxyContext = getProxyContext(entries.get(String.format(ClickHouseConstants.AUTH, clusterName)));
         this.userName = proxyContext.getUser();
         this.password = proxyContext.getPassword();

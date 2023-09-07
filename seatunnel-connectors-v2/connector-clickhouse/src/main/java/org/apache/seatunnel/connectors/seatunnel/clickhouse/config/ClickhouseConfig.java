@@ -220,8 +220,8 @@ public class ClickhouseConfig {
                     .withDescription(
                             "ClickHouse partition value, can be null");
 
-    public static final Option<String> CLUSTER_NAME =
-            Options.key("cluster_name")
+    public static final Option<String> CLUSTER =
+            Options.key("cluster")
                     .stringType()
                     .defaultValue("prod-data")
                     .withDescription(
