@@ -102,6 +102,10 @@ public class SeaTunnelSparkDataWriter<CommitInfoT, StateT> implements DataWriter
     @Override
     public void close() throws IOException {
         // Reports recordsWritten to the Spark output metrics.
-        Optional.of(TaskContext.get()).get().taskMetrics().outputMetrics().setRecordsWritten(recordsWritten.value());
+        Optional.of(TaskContext.get())
+                .get()
+                .taskMetrics()
+                .outputMetrics()
+                .setRecordsWritten(recordsWritten.value());
     }
 }

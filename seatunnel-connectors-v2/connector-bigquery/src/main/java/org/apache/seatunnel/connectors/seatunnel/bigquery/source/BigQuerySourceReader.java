@@ -1,7 +1,7 @@
 package org.apache.seatunnel.connectors.seatunnel.bigquery.source;
 
-import com.google.cloud.hadoop.io.bigquery.UnshardedInputSplit;
-import org.apache.hadoop.conf.Configuration;
+import org.apache.seatunnel.shade.com.typesafe.config.Config;
+
 import org.apache.seatunnel.api.source.Collector;
 import org.apache.seatunnel.api.source.SourceReader;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
@@ -10,9 +10,13 @@ import org.apache.seatunnel.connectors.seatunnel.bigquery.serialize.BigQueryDese
 import org.apache.seatunnel.connectors.seatunnel.bigquery.serialize.BigQueryRecord;
 import org.apache.seatunnel.connectors.seatunnel.bigquery.serialize.SeaTunnelRowDeserializer;
 import org.apache.seatunnel.connectors.seatunnel.bigquery.util.BigQueryUtils;
-import org.apache.seatunnel.shade.com.typesafe.config.Config;
+
+import org.apache.hadoop.conf.Configuration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.cloud.hadoop.io.bigquery.UnshardedInputSplit;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -45,8 +49,11 @@ public class BigQuerySourceReader implements SourceReader<SeaTunnelRow, BigQuery
 
     private final long pollNextWaitTime = 1000L;
 
-    public BigQuerySourceReader(Context context, Config pluginConfig,
-                                String serviceAccount, String temporaryTableName) {
+    public BigQuerySourceReader(
+            Context context,
+            Config pluginConfig,
+            String serviceAccount,
+            String temporaryTableName) {
         this.context = context;
         this.projectId = pluginConfig.getString(SourceConfig.PROJECT.key());
         this.datasetId = pluginConfig.getString(SourceConfig.DATASET.key());
@@ -56,12 +63,10 @@ public class BigQuerySourceReader implements SourceReader<SeaTunnelRow, BigQuery
     }
 
     @Override
-    public void open() throws Exception {
-    }
+    public void open() throws Exception {}
 
     @Override
-    public void close() throws IOException {
-    }
+    public void close() throws IOException {}
 
     @Override
     public void pollNext(Collector<SeaTunnelRow> output) throws Exception {
@@ -70,11 +75,15 @@ public class BigQuerySourceReader implements SourceReader<SeaTunnelRow, BigQuery
             if (bigQuerySourceSplit != null) {
                 UnshardedInputSplit inputSplit = bigQuerySourceSplit.getSplit();
 
-                Configuration configuration = BigQueryUtils.getBigQueryConfig(serviceAccount, projectId, datasetId, temporaryTableName);
+                Configuration configuration =
+                        BigQueryUtils.getBigQueryConfig(
+                                serviceAccount, projectId, datasetId, temporaryTableName);
                 AvroRecordReaderDecorator avroRecordReader = new AvroRecordReaderDecorator();
                 avroRecordReader.initialize(inputSplit, configuration);
                 while (avroRecordReader.nextKeyValue()) {
-                    SeaTunnelRow seaTunnelRow = deserializer.deserialize(new BigQueryRecord(avroRecordReader.getCurrentValue()));
+                    SeaTunnelRow seaTunnelRow =
+                            deserializer.deserialize(
+                                    new BigQueryRecord(avroRecordReader.getCurrentValue()));
                     output.collect(seaTunnelRow);
                 }
             } else if (noMoreSplit) {
@@ -103,7 +112,5 @@ public class BigQuerySourceReader implements SourceReader<SeaTunnelRow, BigQuery
     }
 
     @Override
-    public void notifyCheckpointComplete(long checkpointId) throws Exception {
-
-    }
+    public void notifyCheckpointComplete(long checkpointId) throws Exception {}
 }
