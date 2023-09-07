@@ -1,7 +1,8 @@
 package org.apache.seatunnel.connectors.seatunnel.bigquery.source;
 
-import com.google.cloud.hadoop.io.bigquery.UnshardedInputSplit;
 import org.apache.seatunnel.api.source.SourceSplit;
+
+import com.google.cloud.hadoop.io.bigquery.UnshardedInputSplit;
 
 /**
  * @author ah.he@aftership.com

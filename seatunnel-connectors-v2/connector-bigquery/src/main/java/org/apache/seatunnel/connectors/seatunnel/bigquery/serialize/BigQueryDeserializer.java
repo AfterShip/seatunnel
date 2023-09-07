@@ -1,17 +1,19 @@
 package org.apache.seatunnel.connectors.seatunnel.bigquery.serialize;
 
-import com.google.common.collect.Lists;
+import org.apache.seatunnel.api.table.type.SeaTunnelRow;
+import org.apache.seatunnel.common.exception.CommonErrorCode;
+import org.apache.seatunnel.connectors.seatunnel.bigquery.enums.LogicalTypeEnum;
+import org.apache.seatunnel.connectors.seatunnel.bigquery.exception.BigQueryConnectorErrorCode;
+import org.apache.seatunnel.connectors.seatunnel.bigquery.exception.BigQueryConnectorException;
+
 import org.apache.avro.Conversions;
 import org.apache.avro.LogicalType;
 import org.apache.avro.Schema;
 import org.apache.avro.data.TimeConversions;
 import org.apache.avro.generic.GenericData;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.seatunnel.api.table.type.SeaTunnelRow;
-import org.apache.seatunnel.common.exception.CommonErrorCode;
-import org.apache.seatunnel.connectors.seatunnel.bigquery.enums.LogicalTypeEnum;
-import org.apache.seatunnel.connectors.seatunnel.bigquery.exception.BigQueryConnectorErrorCode;
-import org.apache.seatunnel.connectors.seatunnel.bigquery.exception.BigQueryConnectorException;
+
+import com.google.common.collect.Lists;
 
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
@@ -28,8 +30,7 @@ import java.util.List;
  */
 public class BigQueryDeserializer implements SeaTunnelRowDeserializer {
 
-    public BigQueryDeserializer() {
-    }
+    public BigQueryDeserializer() {}
 
     @Override
     public SeaTunnelRow deserialize(BigQueryRecord record) {
@@ -52,9 +53,7 @@ public class BigQueryDeserializer implements SeaTunnelRowDeserializer {
         return values;
     }
 
-    /**
-     * Convert value
-     */
+    /** Convert value */
     private Object convertValue(Schema.Field field, Object fieldValue, Schema fieldSchema) {
         if (fieldValue == null) {
             return null;
@@ -92,9 +91,7 @@ public class BigQueryDeserializer implements SeaTunnelRowDeserializer {
         }
     }
 
-    /**
-     * Convert logical type value
-     */
+    /** Convert logical type value */
     private Object convertLogicalValue(Object fieldValue, Schema fieldSchema) {
         if (fieldValue == null) {
             return null;
@@ -104,34 +101,45 @@ public class BigQueryDeserializer implements SeaTunnelRowDeserializer {
             LogicalType logicalType = fieldSchema.getLogicalType();
             if (isLogicalType(fieldSchema)) {
                 // Avro does not support datetime(logical type)，we should re-build it.
-                logicalType = logicalType != null ? logicalType : new LogicalType(fieldSchema.getProp("logicalType"));
+                logicalType =
+                        logicalType != null
+                                ? logicalType
+                                : new LogicalType(fieldSchema.getProp("logicalType"));
                 LogicalTypeEnum logicalTypeEnum = LogicalTypeEnum.fromToken(logicalType.getName());
                 switch (logicalTypeEnum) {
                     case DATE:
                         // date will be in yyyy-mm-dd format
-                        return new TimeConversions.DateConversion().fromInt((Integer) fieldValue, fieldSchema, logicalType);
+                        return new TimeConversions.DateConversion()
+                                .fromInt((Integer) fieldValue, fieldSchema, logicalType);
                     case TIME_MILLIS:
                         // time will be in hh:mm:ss format
-                        return new TimeConversions.TimeMillisConversion().fromInt((Integer) fieldValue, fieldSchema, logicalType);
+                        return new TimeConversions.TimeMillisConversion()
+                                .fromInt((Integer) fieldValue, fieldSchema, logicalType);
                     case TIME_MICROS:
                         // time will be in hh:mm:ss format
-                        return new TimeConversions.TimeMicrosConversion().fromLong((Long) fieldValue, fieldSchema, logicalType);
+                        return new TimeConversions.TimeMicrosConversion()
+                                .fromLong((Long) fieldValue, fieldSchema, logicalType);
                     case TIMESTAMP_MILLIS:
                         return LocalDateTime.ofInstant(
-                                new TimeConversions.TimestampMillisConversion().fromLong((Long) fieldValue, fieldSchema, logicalType),
+                                new TimeConversions.TimestampMillisConversion()
+                                        .fromLong((Long) fieldValue, fieldSchema, logicalType),
                                 ZoneId.of("UTC"));
                     case TIMESTAMP_MICROS:
                         return LocalDateTime.ofInstant(
-                                new TimeConversions.TimestampMicrosConversion().fromLong((Long) fieldValue, fieldSchema, logicalType),
+                                new TimeConversions.TimestampMicrosConversion()
+                                        .fromLong((Long) fieldValue, fieldSchema, logicalType),
                                 ZoneId.of("UTC"));
                     case DATETIME:
                         return LocalDateTime.parse(fieldValue.toString());
                     case LOCAL_TIMESTAMP_MILLIS:
-                        return new TimeConversions.LocalTimestampMillisConversion().fromLong((Long) fieldValue, fieldSchema, logicalType);
+                        return new TimeConversions.LocalTimestampMillisConversion()
+                                .fromLong((Long) fieldValue, fieldSchema, logicalType);
                     case LOCAL_TIMESTAMP_MICROS:
-                        return new TimeConversions.LocalTimestampMicrosConversion().fromLong((Long) fieldValue, fieldSchema, logicalType);
+                        return new TimeConversions.LocalTimestampMicrosConversion()
+                                .fromLong((Long) fieldValue, fieldSchema, logicalType);
                     case DECIMAL:
-                        return new Conversions.DecimalConversion().fromBytes((ByteBuffer) fieldValue, fieldSchema, logicalType);
+                        return new Conversions.DecimalConversion()
+                                .fromBytes((ByteBuffer) fieldValue, fieldSchema, logicalType);
                     default:
                         throw new BigQueryConnectorException(
                                 CommonErrorCode.UNSUPPORTED_DATA_TYPE,
@@ -141,20 +149,22 @@ public class BigQueryDeserializer implements SeaTunnelRowDeserializer {
         } catch (ArithmeticException e) {
             throw new BigQueryConnectorException(
                     BigQueryConnectorErrorCode.UNSUPPORTED,
-                    String.format("Field type %s has value that is too large.", fieldSchema.getType()));
+                    String.format(
+                            "Field type %s has value that is too large.", fieldSchema.getType()));
         }
         return null;
     }
 
     /**
-     * Check if the schema is logical type
-     * Avro does not support datetime(logical type), but we can check the logical type from prop
+     * Check if the schema is logical type Avro does not support datetime(logical type), but we can
+     * check the logical type from prop
      *
      * @param schema
      * @return
      */
     private static Boolean isLogicalType(Schema schema) {
-        return schema.getLogicalType() != null || StringUtils.isNotBlank(schema.getProp("logicalType"));
+        return schema.getLogicalType() != null
+                || StringUtils.isNotBlank(schema.getProp("logicalType"));
     }
 
     private Object[] convertArray(Schema.Field field, Object values, Schema elementSchema) {
@@ -192,7 +202,8 @@ public class BigQueryDeserializer implements SeaTunnelRowDeserializer {
         }
         throw new BigQueryConnectorException(
                 BigQueryConnectorErrorCode.UNSUPPORTED,
-                String.format("unable to determine union type. value: %s, schemas: %s", value, schemas));
+                String.format(
+                        "unable to determine union type. value: %s, schemas: %s", value, schemas));
     }
 
     private Object convertBytes(Object fieldValue) {
