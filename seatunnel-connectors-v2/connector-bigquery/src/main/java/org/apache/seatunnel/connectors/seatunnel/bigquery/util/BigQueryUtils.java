@@ -1,5 +1,15 @@
 package org.apache.seatunnel.connectors.seatunnel.bigquery.util;
 
+import org.apache.seatunnel.api.common.SeaTunnelAPIErrorCode;
+import org.apache.seatunnel.connectors.seatunnel.bigquery.exception.BigQueryConnectorErrorCode;
+import org.apache.seatunnel.connectors.seatunnel.bigquery.exception.BigQueryConnectorException;
+import org.apache.seatunnel.connectors.seatunnel.common.utils.GCPUtils;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.security.UserGroupInformation;
+
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -7,17 +17,13 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.bigquery.Bigquery;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.bigquery.*;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.Table;
+import com.google.cloud.bigquery.TableId;
 import com.google.cloud.hadoop.io.bigquery.BigQueryConfiguration;
 import com.google.cloud.hadoop.util.RetryHttpInitializer;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.seatunnel.api.common.SeaTunnelAPIErrorCode;
-import org.apache.seatunnel.connectors.seatunnel.bigquery.exception.BigQueryConnectorErrorCode;
-import org.apache.seatunnel.connectors.seatunnel.bigquery.exception.BigQueryConnectorException;
-import org.apache.seatunnel.connectors.seatunnel.common.utils.GCPUtils;
 
 import java.io.IOException;
 import java.util.Map;
@@ -30,7 +36,8 @@ import java.util.UUID;
  */
 public class BigQueryUtils {
 
-    private static final String TEMPORARY_BUCKET_FORMAT = "gs://%s/integration_bigquery_source/hadoop/input/%s";
+    private static final String TEMPORARY_BUCKET_FORMAT =
+            "gs://%s/integration_bigquery_source/hadoop/input/%s";
 
     // Objects for handling HTTP transport and JSON formatting of API calls
     private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
@@ -43,19 +50,25 @@ public class BigQueryUtils {
 
     public static final String ROOT_DIR = "/";
 
-    public static com.google.api.services.bigquery.Bigquery getBigQueryService(String serviceAccount) {
+    public static com.google.api.services.bigquery.Bigquery getBigQueryService(
+            String serviceAccount) {
         if (StringUtils.isNotBlank(serviceAccount)) {
-            return new Bigquery
-                    .Builder(HTTP_TRANSPORT, JSON_FACTORY, new RetryHttpInitializer(GCPUtils.getCredential(serviceAccount), APP_NAME))
-                    .setApplicationName(APP_NAME).build();
+            return new Bigquery.Builder(
+                            HTTP_TRANSPORT,
+                            JSON_FACTORY,
+                            new RetryHttpInitializer(
+                                    GCPUtils.getCredential(serviceAccount), APP_NAME))
+                    .setApplicationName(APP_NAME)
+                    .build();
         }
         return new Bigquery.Builder(HTTP_TRANSPORT, JSON_FACTORY, null)
-                .setApplicationName(APP_NAME).build();
+                .setApplicationName(APP_NAME)
+                .build();
     }
 
-
     public static BigQuery getBigQuery(String project, Credentials credentials) {
-        BigQueryOptions.Builder bigqueryBuilder = BigQueryOptions.newBuilder().setProjectId(project);
+        BigQueryOptions.Builder bigqueryBuilder =
+                BigQueryOptions.newBuilder().setProjectId(project);
         if (credentials != null) {
             bigqueryBuilder.setCredentials(credentials);
         }
@@ -73,32 +86,36 @@ public class BigQueryUtils {
         return getBigQuery(project, credentials);
     }
 
-    public static Table getTable(BigQuery bigQuery, String project, String dataset, String tableName) {
+    public static Table getTable(
+            BigQuery bigQuery, String project, String dataset, String tableName) {
         Table table = bigQuery.getTable(TableId.of(dataset, tableName));
         if (null == table) {
             throw new BigQueryConnectorException(
                     SeaTunnelAPIErrorCode.TABLE_NOT_EXISTED,
-                    String.format("BigQuery table '%s:%s.%s' does not exist.", project, dataset, tableName));
+                    String.format(
+                            "BigQuery table '%s:%s.%s' does not exist.",
+                            project, dataset, tableName));
         }
         return table;
     }
 
-    public static Schema getTableSchema(BigQuery bigQuery, String project, String dataset, String tableName) {
+    public static Schema getTableSchema(
+            BigQuery bigQuery, String project, String dataset, String tableName) {
         Table table = getTable(bigQuery, project, dataset, tableName);
         Schema schema = table.getDefinition().getSchema();
         if (schema == null) {
             throw new BigQueryConnectorException(
                     BigQueryConnectorErrorCode.SCHEMA_NOT_EXISTED,
-                    String.format("Cannot read from table '%s:%s.%s' because it has no schema.",
+                    String.format(
+                            "Cannot read from table '%s:%s.%s' because it has no schema.",
                             project, dataset, tableName));
         }
         return schema;
     }
 
-    /**
-     * Delete a table.
-     */
-    public static void deleteBigQueryTable(BigQuery bigQuery, String project, String dataset, String tableName) {
+    /** Delete a table. */
+    public static void deleteBigQueryTable(
+            BigQuery bigQuery, String project, String dataset, String tableName) {
         TableId tableId = TableId.of(dataset, tableName);
         if (bigQuery.getTable(tableId) == null) {
             return;
@@ -111,9 +128,7 @@ public class BigQueryUtils {
         }
     }
 
-    /**
-     * Build GCS path for a supplied bucket.
-     */
+    /** Build GCS path for a supplied bucket. */
     public static String getTemporaryGcsPath(String bucket) {
         return String.format(TEMPORARY_BUCKET_FORMAT, bucket, UUID.randomUUID());
     }
@@ -128,13 +143,15 @@ public class BigQueryUtils {
         return tableName + "_" + UUID.randomUUID().toString().replace("-", "");
     }
 
-    public static Configuration getBigQueryConfig(String serviceAccount, String projectId, String dataset, String tableName) {
+    public static Configuration getBigQueryConfig(
+            String serviceAccount, String projectId, String dataset, String tableName) {
         Job job = null;
         try {
             job = Job.getInstance();
             // some input formats require the credentials to be present in the job.
             if (UserGroupInformation.isSecurityEnabled()) {
-                org.apache.hadoop.security.Credentials credentials = UserGroupInformation.getCurrentUser().getCredentials();
+                org.apache.hadoop.security.Credentials credentials =
+                        UserGroupInformation.getCurrentUser().getCredentials();
                 job.getCredentials().addAll(credentials);
             }
         } catch (IOException e) {
@@ -144,13 +161,16 @@ public class BigQueryUtils {
         Configuration configuration = job.getConfiguration();
         configuration.clear();
         if (serviceAccount != null) {
-            final Map<String, String> authProperties = GCPUtils.generateAuthProperties(serviceAccount,
-                    MAP_REDUCE_JSON_KEY_PREFIX,
-                    GCPUtils.CLOUD_JSON_KEYFILE_PREFIX);
+            final Map<String, String> authProperties =
+                    GCPUtils.generateAuthProperties(
+                            serviceAccount,
+                            MAP_REDUCE_JSON_KEY_PREFIX,
+                            GCPUtils.CLOUD_JSON_KEYFILE_PREFIX);
             authProperties.forEach(configuration::set);
         }
         configuration.set("fs.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem");
-        configuration.set("fs.AbstractFileSystem.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS");
+        configuration.set(
+                "fs.AbstractFileSystem.gs.impl", "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS");
         configuration.set("fs.gs.project.id", projectId);
         configuration.set("fs.gs.working.dir", ROOT_DIR);
         configuration.set(BigQueryConfiguration.PROJECT_ID.getKey(), projectId);

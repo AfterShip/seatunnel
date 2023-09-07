@@ -1,14 +1,20 @@
 package org.apache.seatunnel.core.starter.spark.execution;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.seatunnel.api.utils.PrintUtil;
+
 import org.apache.spark.executor.InputMetrics;
 import org.apache.spark.executor.OutputMetrics;
 import org.apache.spark.executor.ShuffleReadMetrics;
 import org.apache.spark.executor.ShuffleWriteMetrics;
-import org.apache.spark.scheduler.*;
+import org.apache.spark.scheduler.SparkListener;
+import org.apache.spark.scheduler.SparkListenerApplicationEnd;
+import org.apache.spark.scheduler.SparkListenerJobEnd;
+import org.apache.spark.scheduler.SparkListenerStageCompleted;
+import org.apache.spark.scheduler.SparkListenerTaskEnd;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.util.LongAccumulator;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.RoundingMode;
 import java.text.DateFormat;
@@ -19,9 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * spark metric
- */
+/** spark metric */
 @Slf4j
 class SparkMetricsListener extends SparkListener {
     private final Long unit = 100000000L;

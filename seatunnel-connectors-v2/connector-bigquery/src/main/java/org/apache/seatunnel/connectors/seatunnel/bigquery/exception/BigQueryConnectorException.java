@@ -10,8 +10,7 @@ import org.apache.seatunnel.common.exception.SeaTunnelRuntimeException;
  */
 public class BigQueryConnectorException extends SeaTunnelRuntimeException {
 
-    public BigQueryConnectorException(
-            SeaTunnelErrorCode seaTunnelErrorCode, String errorMessage) {
+    public BigQueryConnectorException(SeaTunnelErrorCode seaTunnelErrorCode, String errorMessage) {
         super(seaTunnelErrorCode, errorMessage);
     }
 

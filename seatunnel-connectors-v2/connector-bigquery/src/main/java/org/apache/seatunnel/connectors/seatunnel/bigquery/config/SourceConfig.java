@@ -24,17 +24,15 @@ public class SourceConfig extends ConfigCenterConfig {
                     .withDescription("BigQuery dataset.");
 
     public static final Option<String> TABLE =
-            Options.key("table")
-                    .stringType()
-                    .noDefaultValue()
-                    .withDescription("BigQuery table.");
+            Options.key("table").stringType().noDefaultValue().withDescription("BigQuery table.");
 
     public static final Option<String> FILTER =
             Options.key("filter")
                     .stringType()
                     .noDefaultValue()
-                    .withDescription("Filters out rows that do not match the given condition. " +
-                            "For example, if the filter is ‘age > 3 and name is null’.");
+                    .withDescription(
+                            "Filters out rows that do not match the given condition. "
+                                    + "For example, if the filter is ‘age > 3 and name is null’.");
 
     public static final Option<String> PARTITION_FROM =
             Options.key("partition_from")
