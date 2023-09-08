@@ -70,9 +70,14 @@
         </dependency>
         <dependency>
             <groupId>org.apache.seatunnel</groupId>
-            <artifactId>connector-bigquery</artifactId>
+            <artifactId>connector-spanner</artifactId>
             <version>${project.version}</version>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.seatunnel</groupId>-->
+<!--            <artifactId>connector-bigquery</artifactId>-->
+<!--            <version>${project.version}</version>-->
+<!--        </dependency>-->
         <!--   seatunnel connectors   -->
 
         <!--spark-->
