@@ -313,9 +313,7 @@ public class BigQuerySource implements SeaTunnelSource<
             }
             return filter;
         } else {
-            throw new BigQueryConnectorException(
-                    SeaTunnelAPIErrorCode.CONFIG_VALIDATION_FAILED,
-                    "Ensure filter should be not null.");
+            return "1=1";
         }
     }
 }
