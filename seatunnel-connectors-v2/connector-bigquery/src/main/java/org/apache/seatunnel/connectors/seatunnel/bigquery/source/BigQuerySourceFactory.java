@@ -1,12 +1,24 @@
 package org.apache.seatunnel.connectors.seatunnel.bigquery.source;
 
-import com.google.auto.service.AutoService;
 import org.apache.seatunnel.api.configuration.util.OptionRule;
 import org.apache.seatunnel.api.source.SeaTunnelSource;
 import org.apache.seatunnel.api.table.factory.Factory;
 import org.apache.seatunnel.api.table.factory.TableSourceFactory;
 
-import static org.apache.seatunnel.connectors.seatunnel.bigquery.config.SourceConfig.*;
+import com.google.auto.service.AutoService;
+
+import static org.apache.seatunnel.connectors.seatunnel.bigquery.config.SourceConfig.DATASET;
+import static org.apache.seatunnel.connectors.seatunnel.bigquery.config.SourceConfig.FILTER;
+import static org.apache.seatunnel.connectors.seatunnel.bigquery.config.SourceConfig.PARTITION_FROM;
+import static org.apache.seatunnel.connectors.seatunnel.bigquery.config.SourceConfig.PARTITION_TO;
+import static org.apache.seatunnel.connectors.seatunnel.bigquery.config.SourceConfig.PROJECT;
+import static org.apache.seatunnel.connectors.seatunnel.bigquery.config.SourceConfig.SQL;
+import static org.apache.seatunnel.connectors.seatunnel.bigquery.config.SourceConfig.TABLE;
+import static org.apache.seatunnel.connectors.seatunnel.bigquery.config.SourceConfig.TEMP_BUCKET;
+import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_ENVIRONMENT;
+import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_PROJECT;
+import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_TOKEN;
+import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_URL;
 
 /**
  * @author ah.he@aftership.com
@@ -22,7 +34,8 @@ public class BigQuerySourceFactory implements TableSourceFactory {
 
     @Override
     public OptionRule optionRule() {
-        return OptionRule.builder().required(
+        return OptionRule.builder()
+                .required(
                         CONFIG_CENTER_ENVIRONMENT,
                         CONFIG_CENTER_URL,
                         CONFIG_CENTER_TOKEN,
@@ -31,11 +44,7 @@ public class BigQuerySourceFactory implements TableSourceFactory {
                         DATASET,
                         TABLE,
                         TEMP_BUCKET)
-                .optional(
-                        FILTER,
-                        PARTITION_FROM,
-                        PARTITION_TO,
-                        SQL)
+                .optional(FILTER, PARTITION_FROM, PARTITION_TO, SQL)
                 .build();
     }
 

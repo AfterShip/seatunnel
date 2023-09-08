@@ -1,17 +1,23 @@
 package org.apache.seatunnel.connectors.seatunnel.bigquery.source;
 
-import com.google.api.services.bigquery.model.*;
-import com.google.cloud.hadoop.io.bigquery.BigQueryHelper;
-import com.google.cloud.hadoop.io.bigquery.BigQueryStrings;
-import com.google.cloud.hadoop.io.bigquery.ExportFileFormat;
-import com.google.cloud.hadoop.io.bigquery.UnshardedExportToCloudStorage;
-import com.google.common.flogger.GoogleLogger;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputFormat;
 
+import com.google.api.services.bigquery.model.Job;
+import com.google.api.services.bigquery.model.JobConfiguration;
+import com.google.api.services.bigquery.model.JobConfigurationExtract;
+import com.google.api.services.bigquery.model.JobReference;
+import com.google.api.services.bigquery.model.Table;
+import com.google.cloud.hadoop.io.bigquery.BigQueryHelper;
+import com.google.cloud.hadoop.io.bigquery.BigQueryStrings;
+import com.google.cloud.hadoop.io.bigquery.ExportFileFormat;
+import com.google.cloud.hadoop.io.bigquery.UnshardedExportToCloudStorage;
+import com.google.common.flogger.GoogleLogger;
+
 import javax.annotation.Nullable;
+
 import java.io.IOException;
 
 /**
@@ -45,7 +51,6 @@ public class UnshardedExportToCloudStorageDecorator extends UnshardedExportToClo
         this.extractConfig = extractConfig;
     }
 
-
     @Override
     public void beginExport() throws IOException {
         // Set source.
@@ -72,9 +77,10 @@ public class UnshardedExportToCloudStorageDecorator extends UnshardedExportToClo
             logger.atFine().log("Got response '%s'", response);
             exportJobReference = response.getJobReference();
         } catch (IOException e) {
-            String error = String.format(
-                    "Error while exporting table %s",
-                    BigQueryStrings.toString(tableToExport.getTableReference()));
+            String error =
+                    String.format(
+                            "Error while exporting table %s",
+                            BigQueryStrings.toString(tableToExport.getTableReference()));
             throw new IOException(error, e);
         }
     }
