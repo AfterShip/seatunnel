@@ -901,6 +901,14 @@
             <id>automizely-nexus-snapshots</id>
             <url>https://nexus.automizely.org/repository/maven-snapshots/</url>
         </repository>
+        <repository>
+            <id>sonatype</id>
+            <url>https://oss.sonatype.org/content/groups/public</url>
+        </repository>
+        <repository>
+            <id>sonatype-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
     </repositories>
 
     <distributionManagement>

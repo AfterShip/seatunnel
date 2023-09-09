@@ -24,9 +24,11 @@ import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.translation.serialization.RowConverter;
 import org.apache.seatunnel.translation.spark.serialization.InternalRowConverter;
 
+import org.apache.spark.TaskContext;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.connector.write.DataWriter;
 import org.apache.spark.sql.connector.write.WriterCommitMessage;
+import org.apache.spark.util.LongAccumulator;
 
 import javax.annotation.Nullable;
 
@@ -42,6 +44,7 @@ public class SeaTunnelSparkDataWriter<CommitInfoT, StateT> implements DataWriter
     private final RowConverter<InternalRow> rowConverter;
     private CommitInfoT latestCommitInfoT;
     private long epochId;
+    private LongAccumulator recordsWritten = new LongAccumulator();
 
     public SeaTunnelSparkDataWriter(
             SinkWriter<SeaTunnelRow, CommitInfoT, StateT> sinkWriter,
@@ -57,6 +60,7 @@ public class SeaTunnelSparkDataWriter<CommitInfoT, StateT> implements DataWriter
     @Override
     public void write(InternalRow record) throws IOException {
         sinkWriter.write(rowConverter.reconvert(record));
+        recordsWritten.add(1);
     }
 
     @Override
@@ -96,5 +100,12 @@ public class SeaTunnelSparkDataWriter<CommitInfoT, StateT> implements DataWriter
     }
 
     @Override
-    public void close() throws IOException {}
+    public void close() throws IOException {
+        // Reports recordsWritten to the Spark output metrics.
+        Optional.of(TaskContext.get())
+                .get()
+                .taskMetrics()
+                .outputMetrics()
+                .setRecordsWritten(recordsWritten.value());
+    }
 }

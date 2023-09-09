@@ -1,13 +1,15 @@
 package org.apache.seatunnel.connectors.seatunnel.bigquery.source;
 
-import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.auto.service.AutoService;
-import com.google.cloud.bigquery.*;
-import com.google.common.base.Strings;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.seatunnel.shade.com.typesafe.config.Config;
+
 import org.apache.seatunnel.api.common.PrepareFailException;
 import org.apache.seatunnel.api.common.SeaTunnelAPIErrorCode;
-import org.apache.seatunnel.api.source.*;
+import org.apache.seatunnel.api.source.Boundedness;
+import org.apache.seatunnel.api.source.SeaTunnelSource;
+import org.apache.seatunnel.api.source.SourceReader;
+import org.apache.seatunnel.api.source.SourceSplitEnumerator;
+import org.apache.seatunnel.api.source.SupportColumnProjection;
+import org.apache.seatunnel.api.source.SupportParallelism;
 import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
@@ -22,7 +24,25 @@ import org.apache.seatunnel.connectors.seatunnel.bigquery.util.BigQueryUtils;
 import org.apache.seatunnel.connectors.seatunnel.bigquery.util.TypeConvertUtils;
 import org.apache.seatunnel.connectors.seatunnel.common.utils.ConfigCenterUtils;
 import org.apache.seatunnel.connectors.seatunnel.common.utils.GCPUtils;
-import org.apache.seatunnel.shade.com.typesafe.config.Config;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.auto.service.AutoService;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.Job;
+import com.google.cloud.bigquery.JobInfo;
+import com.google.cloud.bigquery.JobStatistics;
+import com.google.cloud.bigquery.LegacySQLTypeName;
+import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardTableDefinition;
+import com.google.cloud.bigquery.Table;
+import com.google.cloud.bigquery.TableDefinition;
+import com.google.cloud.bigquery.TimePartitioning;
+import com.google.common.base.Strings;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -34,10 +54,10 @@ import java.util.Objects;
  * @date 2023/8/2 13:50
  */
 @AutoService(SeaTunnelSource.class)
-public class BigQuerySource implements SeaTunnelSource<
-        SeaTunnelRow, BigQuerySourceSplit, BigQuerySourceState>,
-        SupportParallelism,
-        SupportColumnProjection {
+public class BigQuerySource
+        implements SeaTunnelSource<SeaTunnelRow, BigQuerySourceSplit, BigQuerySourceState>,
+                SupportParallelism,
+                SupportColumnProjection {
 
     private Config pluginConfig;
 
@@ -76,15 +96,17 @@ public class BigQuerySource implements SeaTunnelSource<
                             "PluginName: %s, PluginType: %s, Message: %s",
                             getPluginName(), PluginType.SOURCE, checkResult.getMsg()));
         }
-        serviceAccount = ConfigCenterUtils.getServiceAccountFromConfigCenter(
-                pluginConfig.getString(SourceConfig.CONFIG_CENTER_TOKEN.key()),
-                pluginConfig.getString(SourceConfig.CONFIG_CENTER_URL.key()),
-                pluginConfig.getString(SourceConfig.CONFIG_CENTER_ENVIRONMENT.key()),
-                pluginConfig.getString(SourceConfig.CONFIG_CENTER_PROJECT.key())
-        );
+        serviceAccount =
+                ConfigCenterUtils.getServiceAccountFromConfigCenter(
+                        pluginConfig.getString(SourceConfig.CONFIG_CENTER_TOKEN.key()),
+                        pluginConfig.getString(SourceConfig.CONFIG_CENTER_URL.key()),
+                        pluginConfig.getString(SourceConfig.CONFIG_CENTER_ENVIRONMENT.key()),
+                        pluginConfig.getString(SourceConfig.CONFIG_CENTER_PROJECT.key()));
         ServiceAccountCredentials credentials = GCPUtils.getGoogleCredentials(serviceAccount);
 
-        BigQuery bigQuery = BigQueryUtils.getBigQuery(pluginConfig.getString(SourceConfig.PROJECT.key()), credentials);
+        BigQuery bigQuery =
+                BigQueryUtils.getBigQuery(
+                        pluginConfig.getString(SourceConfig.PROJECT.key()), credentials);
         sql = buildQuerySQL(bigQuery);
 
         // dry run bigQuery sql
@@ -138,20 +160,31 @@ public class BigQuerySource implements SeaTunnelSource<
     }
 
     @Override
-    public SourceReader<SeaTunnelRow, BigQuerySourceSplit> createReader(SourceReader.Context readerContext) throws Exception {
-        return new BigQuerySourceReader(readerContext, pluginConfig, serviceAccount, temporaryTableName);
+    public SourceReader<SeaTunnelRow, BigQuerySourceSplit> createReader(
+            SourceReader.Context readerContext) throws Exception {
+        return new BigQuerySourceReader(
+                readerContext, pluginConfig, serviceAccount, temporaryTableName);
     }
 
     @Override
     public SourceSplitEnumerator<BigQuerySourceSplit, BigQuerySourceState> createEnumerator(
             SourceSplitEnumerator.Context<BigQuerySourceSplit> enumeratorContext) throws Exception {
-        return new BigQuerySourceSplitEnumerator(enumeratorContext, pluginConfig, serviceAccount, sql, temporaryTableName);
+        return new BigQuerySourceSplitEnumerator(
+                enumeratorContext, pluginConfig, serviceAccount, sql, temporaryTableName);
     }
 
     @Override
     public SourceSplitEnumerator<BigQuerySourceSplit, BigQuerySourceState> restoreEnumerator(
-            SourceSplitEnumerator.Context<BigQuerySourceSplit> enumeratorContext, BigQuerySourceState checkpointState) throws Exception {
-        return new BigQuerySourceSplitEnumerator(enumeratorContext, pluginConfig, checkpointState, serviceAccount, sql, temporaryTableName);
+            SourceSplitEnumerator.Context<BigQuerySourceSplit> enumeratorContext,
+            BigQuerySourceState checkpointState)
+            throws Exception {
+        return new BigQuerySourceSplitEnumerator(
+                enumeratorContext,
+                pluginConfig,
+                checkpointState,
+                serviceAccount,
+                sql,
+                temporaryTableName);
     }
 
     private String buildQuerySQL(BigQuery bigQuery) {
@@ -165,24 +198,45 @@ public class BigQuerySource implements SeaTunnelSource<
             String dataset = pluginConfig.getString(SourceConfig.DATASET.key());
             String tableName = pluginConfig.getString(SourceConfig.TABLE.key());
             String filter = getFilter();
-            String partitionFromDate = pluginConfig.hasPath(SourceConfig.PARTITION_FROM.key()) ? pluginConfig.getString(SourceConfig.PARTITION_FROM.key()) : null;
-            String partitionToDate = pluginConfig.hasPath(SourceConfig.PARTITION_TO.key()) ? pluginConfig.getString(SourceConfig.PARTITION_TO.key()) : null;
+            String partitionFromDate =
+                    pluginConfig.hasPath(SourceConfig.PARTITION_FROM.key())
+                            ? pluginConfig.getString(SourceConfig.PARTITION_FROM.key())
+                            : null;
+            String partitionToDate =
+                    pluginConfig.hasPath(SourceConfig.PARTITION_TO.key())
+                            ? pluginConfig.getString(SourceConfig.PARTITION_TO.key())
+                            : null;
 
             Table sourceTable = BigQueryUtils.getTable(bigQuery, project, dataset, tableName);
             TableDefinition.Type type = sourceTable.getDefinition().getType();
 
-            if (type == TableDefinition.Type.VIEW || type == TableDefinition.Type.MATERIALIZED_VIEW) {
+            if (type == TableDefinition.Type.VIEW
+                    || type == TableDefinition.Type.MATERIALIZED_VIEW) {
                 query = generateQueryForMaterializingView(project, dataset, tableName, filter);
             } else {
-                validatePartitionProperties(bigQuery, project, dataset, tableName, partitionFromDate, partitionToDate);
-                query = generateQueryFromTable(bigQuery, partitionFromDate, partitionToDate, filter, project, dataset, tableName);
+                validatePartitionProperties(
+                        bigQuery, project, dataset, tableName, partitionFromDate, partitionToDate);
+                query =
+                        generateQueryFromTable(
+                                bigQuery,
+                                partitionFromDate,
+                                partitionToDate,
+                                filter,
+                                project,
+                                dataset,
+                                tableName);
             }
         }
         return query;
     }
 
-    private void validatePartitionProperties(BigQuery bigQuery, String project, String dataset, String tableName,
-                                             String partitionFromDate, String partitionToDate) {
+    private void validatePartitionProperties(
+            BigQuery bigQuery,
+            String project,
+            String dataset,
+            String tableName,
+            String partitionFromDate,
+            String partitionToDate) {
         Table sourceTable = BigQueryUtils.getTable(bigQuery, project, dataset, tableName);
 
         if (sourceTable.getDefinition() instanceof StandardTableDefinition) {
@@ -203,8 +257,10 @@ public class BigQuerySource implements SeaTunnelSource<
             } catch (DateTimeException ex) {
                 throw new BigQueryConnectorException(
                         SeaTunnelAPIErrorCode.CONFIG_VALIDATION_FAILED,
-                        String.format("Invalid partition from date format: %s, " +
-                                "Ensure partition from date is of format 'yyyy-MM-dd'.", partitionFromDate));
+                        String.format(
+                                "Invalid partition from date format: %s, "
+                                        + "Ensure partition from date is of format 'yyyy-MM-dd'.",
+                                partitionFromDate));
             }
         }
         LocalDate toDate = null;
@@ -214,27 +270,41 @@ public class BigQuerySource implements SeaTunnelSource<
             } catch (DateTimeException ex) {
                 throw new BigQueryConnectorException(
                         SeaTunnelAPIErrorCode.CONFIG_VALIDATION_FAILED,
-                        String.format("Invalid partition to date format: %s, " +
-                                "Ensure partition to date is of format 'yyyy-MM-dd'.", partitionToDate));
+                        String.format(
+                                "Invalid partition to date format: %s, "
+                                        + "Ensure partition to date is of format 'yyyy-MM-dd'.",
+                                partitionToDate));
             }
         }
 
-        if (fromDate != null && toDate != null && fromDate.isAfter(toDate) && !fromDate.isEqual(toDate)) {
+        if (fromDate != null
+                && toDate != null
+                && fromDate.isAfter(toDate)
+                && !fromDate.isEqual(toDate)) {
             throw new BigQueryConnectorException(
                     SeaTunnelAPIErrorCode.CONFIG_VALIDATION_FAILED,
-                    String.format("'Partition From Date' must be before or equal 'Partition To Date'. " +
-                            "partitionFromDate: %s, partitionToDate: %s.", partitionFromDate, partitionToDate));
+                    String.format(
+                            "'Partition From Date' must be before or equal 'Partition To Date'. "
+                                    + "partitionFromDate: %s, partitionToDate: %s.",
+                            partitionFromDate, partitionToDate));
         }
     }
 
-    private String generateQueryFromTable(BigQuery bigQuery, String partitionFromDate, String partitionToDate, String filter,
-                                          String project, String dataset, String table) {
+    private String generateQueryFromTable(
+            BigQuery bigQuery,
+            String partitionFromDate,
+            String partitionToDate,
+            String filter,
+            String project,
+            String dataset,
+            String table) {
         if (partitionFromDate == null && partitionToDate == null && filter == null) {
             return null;
         }
         String queryTemplate = "select * from `%s` where %s";
         Table sourceTable = BigQueryUtils.getTable(bigQuery, project, dataset, table);
-        StandardTableDefinition tableDefinition = Objects.requireNonNull(sourceTable).getDefinition();
+        StandardTableDefinition tableDefinition =
+                Objects.requireNonNull(sourceTable).getDefinition();
         TimePartitioning timePartitioning = tableDefinition.getTimePartitioning();
         if (timePartitioning == null && filter == null) {
             return null;
@@ -242,8 +312,9 @@ public class BigQuerySource implements SeaTunnelSource<
         StringBuilder condition = new StringBuilder();
 
         if (timePartitioning != null) {
-            String timePartitionCondition = generateTimePartitionCondition(tableDefinition, timePartitioning,
-                    partitionFromDate, partitionToDate);
+            String timePartitionCondition =
+                    generateTimePartitionCondition(
+                            tableDefinition, timePartitioning, partitionFromDate, partitionToDate);
             condition.append(timePartitionCondition);
         }
 
@@ -259,12 +330,16 @@ public class BigQuerySource implements SeaTunnelSource<
         return String.format(queryTemplate, tableName, condition.toString());
     }
 
-    private String generateTimePartitionCondition(StandardTableDefinition tableDefinition,
-                                                  TimePartitioning timePartitioning, String partitionFromDate,
-                                                  String partitionToDate) {
+    private String generateTimePartitionCondition(
+            StandardTableDefinition tableDefinition,
+            TimePartitioning timePartitioning,
+            String partitionFromDate,
+            String partitionToDate) {
         StringBuilder timePartitionCondition = new StringBuilder();
-        String columnName = timePartitioning.getField() !=
-                null ? timePartitioning.getField() : BigQueryConstants.DEFAULT_COLUMN_NAME;
+        String columnName =
+                timePartitioning.getField() != null
+                        ? timePartitioning.getField()
+                        : BigQueryConstants.DEFAULT_COLUMN_NAME;
 
         LegacySQLTypeName columnType = null;
         if (!BigQueryConstants.DEFAULT_COLUMN_NAME.equals(columnName)) {
@@ -275,8 +350,12 @@ public class BigQuerySource implements SeaTunnelSource<
             if (LegacySQLTypeName.DATE.equals(columnType)) {
                 columnName = "TIMESTAMP(\"" + columnName + "\")";
             }
-            timePartitionCondition.append(columnName).append(" >= ").append("TIMESTAMP(\"")
-                    .append(partitionFromDate).append("\")");
+            timePartitionCondition
+                    .append(columnName)
+                    .append(" >= ")
+                    .append("TIMESTAMP(\"")
+                    .append(partitionFromDate)
+                    .append("\")");
         }
         if (partitionFromDate != null && partitionToDate != null) {
             timePartitionCondition.append(" and ");
@@ -285,13 +364,18 @@ public class BigQuerySource implements SeaTunnelSource<
             if (LegacySQLTypeName.DATE.equals(columnType)) {
                 columnName = "TIMESTAMP(\"" + columnName + "\")";
             }
-            timePartitionCondition.append(columnName).append(" < ").append("TIMESTAMP(\"")
-                    .append(partitionToDate).append("\")");
+            timePartitionCondition
+                    .append(columnName)
+                    .append(" < ")
+                    .append("TIMESTAMP(\"")
+                    .append(partitionToDate)
+                    .append("\")");
         }
         return timePartitionCondition.toString();
     }
 
-    String generateQueryForMaterializingView(String datasetProject, String dataset, String table, String filter) {
+    String generateQueryForMaterializingView(
+            String datasetProject, String dataset, String table, String filter) {
         String queryTemplate = "select * from `%s`%s";
         StringBuilder condition = new StringBuilder();
 
@@ -307,7 +391,8 @@ public class BigQuerySource implements SeaTunnelSource<
         if (pluginConfig.hasPath(SourceConfig.FILTER.key())
                 && StringUtils.isNotBlank(pluginConfig.getString(SourceConfig.FILTER.key()))) {
             String filter = pluginConfig.getString(SourceConfig.FILTER.key());
-            // remove the WHERE keyword from the filter if the user adds it at the begging of the expression
+            // remove the WHERE keyword from the filter if the user adds it at the begging of the
+            // expression
             if (filter.toUpperCase().startsWith("WHERE")) {
                 filter = filter.substring("WHERE".length());
             }

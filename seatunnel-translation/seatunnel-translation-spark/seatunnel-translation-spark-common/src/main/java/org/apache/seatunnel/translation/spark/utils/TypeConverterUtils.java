@@ -24,6 +24,7 @@ import org.apache.seatunnel.api.table.type.LocalTimeType;
 import org.apache.seatunnel.api.table.type.MapType;
 import org.apache.seatunnel.api.table.type.PrimitiveByteArrayType;
 import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
+import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 
 import org.apache.spark.sql.types.DataType;
@@ -166,6 +167,9 @@ public class TypeConverterUtils {
                 return ArrayType.FLOAT_ARRAY_TYPE;
             case DOUBLE:
                 return ArrayType.DOUBLE_ARRAY_TYPE;
+            case ROW:
+                return new ArrayType<>(
+                        SeaTunnelRow[].class, convert((StructType) arrayType.elementType()));
             default:
                 throw new UnsupportedOperationException(
                         String.format("Unsupported Spark's array type: %s.", arrayType.sql()));

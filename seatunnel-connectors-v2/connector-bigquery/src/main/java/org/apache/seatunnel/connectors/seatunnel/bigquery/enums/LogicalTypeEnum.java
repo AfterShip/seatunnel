@@ -40,9 +40,7 @@ public enum LogicalTypeEnum {
         this.token = token;
     }
 
-    /**
-     * @return returns the token string associated with logical type.
-     */
+    /** @return returns the token string associated with logical type. */
     public String getToken() {
         return token;
     }
