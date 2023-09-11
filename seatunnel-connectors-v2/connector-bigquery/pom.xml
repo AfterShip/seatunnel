@@ -101,6 +101,10 @@
                                     <pattern>com.google.protobuf</pattern>
                                     <shadedPattern>${seatunnel.shade.package}.google.bigquery.com.google.protobuf</shadedPattern>
                                 </relocation>
+                                <relocation>
+                                    <pattern>com.google.gson</pattern>
+                                    <shadedPattern>${seatunnel.shade.package}.google.bigquery.com.google.gson</shadedPattern>
+                                </relocation>
                             </relocations>
                             <filters>
                                 <filter>
