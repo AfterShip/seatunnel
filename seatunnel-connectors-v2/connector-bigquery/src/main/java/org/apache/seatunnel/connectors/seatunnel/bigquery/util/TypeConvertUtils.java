@@ -31,7 +31,7 @@ public class TypeConvertUtils {
                 case BYTES:
                     return ArrayType.BYTE_ARRAY_TYPE;
                 case STRING:
-//                case JSON:
+                case JSON:
                     return ArrayType.STRING_ARRAY_TYPE;
                 case INT64:
                     return ArrayType.LONG_ARRAY_TYPE;
@@ -72,7 +72,7 @@ public class TypeConvertUtils {
                 case BYTES:
                     return BasicType.BYTE_TYPE;
                 case STRING:
-//                case JSON:
+                case JSON:
                     return BasicType.STRING_TYPE;
                 case INT64:
                     return BasicType.LONG_TYPE;
