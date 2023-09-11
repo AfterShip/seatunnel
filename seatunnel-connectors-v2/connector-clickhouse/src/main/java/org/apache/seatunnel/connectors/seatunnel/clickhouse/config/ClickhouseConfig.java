@@ -20,13 +20,33 @@ package org.apache.seatunnel.connectors.seatunnel.clickhouse.config;
 import org.apache.seatunnel.api.configuration.Option;
 import org.apache.seatunnel.api.configuration.Options;
 
-import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("checkstyle:MagicNumber")
 public class ClickhouseConfig {
+
+    public static final Option<String> ENVIRONMENT =
+            Options.key("environment")
+                    .stringType()
+                    .noDefaultValue()
+                    .withDescription("eg: production/testing");
+    public static final Option<String> CONFIG_CENTER_URL =
+            Options.key("config_center_url")
+                    .stringType()
+                    .noDefaultValue()
+                    .withDescription("Config center url.");
+    public static final Option<String> CONFIG_CENTER_TOKEN =
+            Options.key("config_center_token")
+                    .stringType()
+                    .noDefaultValue()
+                    .withDescription("Config center token.");
+    public static final Option<String> CONFIG_CENTER_PROJECT =
+            Options.key("config_center_project")
+                    .stringType()
+                    .noDefaultValue()
+                    .withDescription("Config center project name.");
 
     /** Bulk size of clickhouse jdbc */
     public static final Option<Integer> BULK_SIZE =
@@ -76,14 +96,13 @@ public class ClickhouseConfig {
                     .noDefaultValue()
                     .withDescription("Clickhouse server password");
 
-    /** Clickhouse server timezone */
-    public static final Option<String> SERVER_TIME_ZONE =
-            Options.key("server_time_zone")
-                    .stringType()
-                    .defaultValue(ZoneId.systemDefault().getId())
-                    .withDescription(
-                            "The session time zone in database server."
-                                    + "If not set, then ZoneId.systemDefault() is used to determine the server time zone");
+    /** Split mode when table is distributed engine */
+    public static final Option<Boolean> USE_LOCAL =
+            Options.key("use_local")
+                    .booleanType()
+                    .defaultValue(true)
+                    .withDescription("When use_local is true, ClickhouseFile sink connector " +
+                            "will commit into local table");
 
     /** Split mode when table is distributed engine */
     public static final Option<Boolean> SPLIT_MODE =
@@ -179,4 +198,32 @@ public class ClickhouseConfig {
                     .defaultValue("/tmp/seatunnel/clickhouse-local/file")
                     .withDescription(
                             "The directory where ClickhouseFile stores temporary files locally.");
+
+    public static final Option<String> WRITE_MODE =
+            Options.key("write_mode")
+                    .stringType()
+                    .defaultValue("append")
+                    .withDescription(
+                            "Write mode");
+
+    public static final Option<String> IMPORT_MODE =
+            Options.key("import_mode")
+                    .stringType()
+                    .defaultValue("all")
+                    .withDescription(
+                            "Import mode");
+
+    public static final Option<String> PARTITION_VALUE =
+            Options.key("partition_value")
+                    .stringType()
+                    .noDefaultValue()
+                    .withDescription(
+                            "ClickHouse partition value, can be null");
+
+    public static final Option<String> CLUSTER =
+            Options.key("cluster")
+                    .stringType()
+                    .defaultValue("prod-data")
+                    .withDescription(
+                            "The name of cluster.");
 }
