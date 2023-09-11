@@ -34,6 +34,7 @@
         <config-center.version>0.2.0</config-center.version>
         <google.api.services.storage>v1-rev171-1.25.0</google.api.services.storage>
         <google.auth.library.oauth2.http>1.3.0</google.auth.library.oauth2.http>
+        <google.api.version>2.2.0</google.api.version>
     </properties>
 
     <dependencies>
@@ -43,21 +44,36 @@
             <version>${config-center.version}</version>
             <scope>compile</scope>
         </dependency>
+
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang3.version}</version>
             <scope>compile</scope>
         </dependency>
+
         <dependency>
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-storage</artifactId>
             <version>${google.api.services.storage}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>google-api-client</artifactId>
+                    <groupId>com.google.api-client</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
             <version>${google.auth.library.oauth2.http}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+            <version>${google.api.version}</version>
         </dependency>
 
     </dependencies>
