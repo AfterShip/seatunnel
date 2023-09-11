@@ -146,18 +146,18 @@
                     <scope>provided</scope>
                 </dependency>
                 <!-- connectors -->
-                <dependency>
-                    <groupId>org.apache.seatunnel</groupId>
-                    <artifactId>connector-fake</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.seatunnel</groupId>
-                    <artifactId>connector-console</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
+                <!--                <dependency>-->
+                <!--                    <groupId>org.apache.seatunnel</groupId>-->
+                <!--                    <artifactId>connector-fake</artifactId>-->
+                <!--                    <version>${project.version}</version>-->
+                <!--                    <scope>provided</scope>-->
+                <!--                </dependency>-->
+                <!--                <dependency>-->
+                <!--                    <groupId>org.apache.seatunnel</groupId>-->
+                <!--                    <artifactId>connector-console</artifactId>-->
+                <!--                    <version>${project.version}</version>-->
+                <!--                    <scope>provided</scope>-->
+                <!--                </dependency>-->
                 <!--                <dependency>-->
                 <!--                    <groupId>org.apache.seatunnel</groupId>-->
                 <!--                    <artifactId>connector-assert</artifactId>-->
@@ -320,12 +320,12 @@
                 <!--                    <version>${project.version}</version>-->
                 <!--                    <scope>provided</scope>-->
                 <!--                </dependency>-->
-                <dependency>
-                    <groupId>org.apache.seatunnel</groupId>
-                    <artifactId>connector-elasticsearch</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
+                <!--                <dependency>-->
+                <!--                    <groupId>org.apache.seatunnel</groupId>-->
+                <!--                    <artifactId>connector-elasticsearch</artifactId>-->
+                <!--                    <version>${project.version}</version>-->
+                <!--                    <scope>provided</scope>-->
+                <!--                </dependency>-->
                 <!--                <dependency>-->
                 <!--                    <groupId>org.apache.seatunnel</groupId>-->
                 <!--                    <artifactId>connector-iotdb</artifactId>-->
@@ -344,12 +344,12 @@
                 <!--                    <version>${project.version}</version>-->
                 <!--                    <scope>provided</scope>-->
                 <!--                </dependency>-->
-                <dependency>
-                    <groupId>org.apache.seatunnel</groupId>
-                    <artifactId>connector-google-sheets</artifactId>
-                    <version>${project.version}</version>
-                    <scope>provided</scope>
-                </dependency>
+                <!--                <dependency>-->
+                <!--                    <groupId>org.apache.seatunnel</groupId>-->
+                <!--                    <artifactId>connector-google-sheets</artifactId>-->
+                <!--                    <version>${project.version}</version>-->
+                <!--                    <scope>provided</scope>-->
+                <!--                </dependency>-->
                 <!--                <dependency>-->
                 <!--                    <groupId>org.apache.seatunnel</groupId>-->
                 <!--                    <artifactId>connector-google-firestore</artifactId>-->
