@@ -77,8 +77,8 @@
             <artifactId>guava</artifactId>
             <exclusions>
                 <exclusion>
-                    <artifactId>failureaccess</artifactId>
                     <groupId>com.google.guava</groupId>
+                    <artifactId>failureaccess</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
