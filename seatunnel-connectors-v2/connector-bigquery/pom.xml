@@ -15,11 +15,12 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <google.cloud.bigquery.version>1.137.1</google.cloud.bigquery.version>
+        <google.cloud.bigquery.version>2.31.1</google.cloud.bigquery.version>
         <bigquery.connector.hadoop3.version>hadoop3-1.2.0</bigquery.connector.hadoop3.version>
-        <google.cloud.storage.version>1.118.0</google.cloud.storage.version>
+        <google.cloud.storage.version>2.26.1</google.cloud.storage.version>
         <avro.version>1.11.2</avro.version>
-        <guava.version>27.0.1-jre</guava.version>
+        <guava.version>32.1.2-jre</guava.version>
+        <google.libraries.bom.version>26.22.0</google.libraries.bom.version>
     </properties>
 
     <dependencies>
@@ -69,6 +70,12 @@
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
             <version>${avro.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -87,6 +94,10 @@
                 <exclusion>
                     <groupId>org.apache.avro</groupId>
                     <artifactId>avro</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
