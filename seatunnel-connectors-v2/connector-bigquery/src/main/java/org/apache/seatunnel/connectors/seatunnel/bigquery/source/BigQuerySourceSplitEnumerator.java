@@ -153,7 +153,8 @@ public class BigQuerySourceSplitEnumerator
             } catch (Exception e) {
                 throw new BigQueryConnectorException(
                         BigQueryConnectorErrorCode.GET_BIGQUERY_SPLIT,
-                        "Get BigQuery split failed. " + e);
+                        "Get BigQuery split failed. " + e,
+                        e);
             }
             assignSplit(readers);
         }
