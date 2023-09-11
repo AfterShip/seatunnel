@@ -15,12 +15,22 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <google.cloud.bigquery.version>2.31.1</google.cloud.bigquery.version>
         <bigquery.connector.hadoop3.version>hadoop3-1.2.0</bigquery.connector.hadoop3.version>
-        <google.cloud.storage.version>2.26.1</google.cloud.storage.version>
         <avro.version>1.11.2</avro.version>
-        <guava.version>31.1-jre</guava.version>
+        <google.cloud.libraries.bom.version>26.1.5</google.cloud.libraries.bom.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>libraries-bom</artifactId>
+                <version>${google.cloud.libraries.bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -37,26 +47,18 @@
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-bigquery</artifactId>
-            <version>${google.cloud.bigquery.version}</version>
         </dependency>
 
         <!-- Google Cloud Storage client library -->
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-storage</artifactId>
-            <version>${google.cloud.storage.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.google.cloud.bigdataoss</groupId>
             <artifactId>bigquery-connector</artifactId>
             <version>${bigquery.connector.hadoop3.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>google-api-client</artifactId>
-                    <groupId>com.google.api-client</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -68,7 +70,6 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
         </dependency>
 
         <dependency>
