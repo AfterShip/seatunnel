@@ -23,6 +23,18 @@
         <google.cloud.storage.verison>2.15.1</google.cloud.storage.verison>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>libraries-bom</artifactId>
+                <version>${google.cloud.libraries.bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -38,13 +50,13 @@
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-bigquery</artifactId>
-            <version>${bigquery.version}</version>
+            <!--            <version>${bigquery.version}</version>-->
         </dependency>
 
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-storage</artifactId>
-            <version>${google.cloud.storage.verison}</version>
+            <!--            <version>${google.cloud.storage.verison}</version>-->
         </dependency>
 
         <dependency>
@@ -62,7 +74,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
+            <!--            <version>${guava.version}</version>-->
         </dependency>
 
         <dependency>
