@@ -32,7 +32,7 @@ RUN mkdir -p ${SEATUNNEL_HOME}
 RUN chmod 755 ${SEATUNNEL_HOME}
 RUN mkdir ${SPARK_CONF_HOME}
 RUN mkdir ${CONFIG_CENTER_HOME}
-COPY --from=builder ${SEATUNNEL_SOURCE}/config/metrics_*.properties /tmp/
+COPY --from=builder ${SEATUNNEL_SOURCE}/config/metrics.properties ${SPARK_CONF_HOME}
 COPY --from=builder ${SEATUNNEL_SOURCE}/config/jmxCollector.yaml ${SPARK_CONF_HOME}
 COPY --from=builder ${SEATUNNEL_DIST}/target/apache-seatunnel*bin.tar.gz ${SEATUNNEL_HOME}/
 COPY --from=builder ${SEATUNNEL_TOOL}/config_center/ ${CONFIG_CENTER_HOME}/
