@@ -19,19 +19,9 @@
         <avro.version>1.11.2</avro.version>
         <google.cloud.libraries.bom.version>26.1.5</google.cloud.libraries.bom.version>
         <guava.version>31.1-jre</guava.version>
+        <bigquery.version>2.19.1</bigquery.version>
+        <google.cloud.storage.verison>2.15.1</google.cloud.storage.verison>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.google.cloud</groupId>
-                <artifactId>libraries-bom</artifactId>
-                <version>${google.cloud.libraries.bom.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -54,12 +44,26 @@
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-bigquery</artifactId>
+            <version>${bigquery.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Google Cloud Storage client library -->
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-storage</artifactId>
+            <version>${google.cloud.storage.verison}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -123,7 +127,9 @@
                                 <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
-                                        <exclude>META-INF/maven/**</exclude>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
