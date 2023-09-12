@@ -38,6 +38,14 @@
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>google-http-client</artifactId>
+                    <groupId>com.google.http-client</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>google-http-client-gson</artifactId>
+                    <groupId>com.google.http-client</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -61,6 +69,14 @@
                 <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>google-http-client-jackson2</artifactId>
+                    <groupId>com.google.http-client</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>google-oauth-client</artifactId>
+                    <groupId>com.google.oauth-client</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -87,6 +103,10 @@
                 <exclusion>
                     <groupId>org.apache.avro</groupId>
                     <artifactId>avro</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>gson</artifactId>
+                    <groupId>com.google.code.gson</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
