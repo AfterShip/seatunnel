@@ -26,7 +26,7 @@ RUN wget -P ${SPARK_HOME}/jars/ https://nexus.automizely.org/repository/maven-re
 RUN wget -P ${SPARK_HOME}/jars/ https://nexus.automizely.org/repository/maven-releases/com/automizely/data/data-dw-integration-spark-metric/${SPARK_METRIC_VERSION}/data-dw-integration-spark-metric-${SPARK_METRIC_VERSION}.jar
 
 RUN rm ${SPARK_HOME}/jars/guava*.jar
-RUN wget -P ${SPARK_HOME}/jars/ https://nexus.automizely.org/repository/maven-releases/com/google/guava/guava/${GUAVA_VERSION}/guava-${GUAVA_VERSION}.jar
+RUN wget -P ${SPARK_HOME}/jars/ https://nexus.automizely.org/repository/maven-central/com/google/guava/guava/${GUAVA_VERSION}/guava-${GUAVA_VERSION}.jar
 
 RUN mkdir -p ${SEATUNNEL_HOME}
 RUN chmod 755 ${SEATUNNEL_HOME}
