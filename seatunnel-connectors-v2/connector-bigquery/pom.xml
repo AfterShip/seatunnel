@@ -18,6 +18,7 @@
         <bigquery.connector.hadoop3.version>hadoop3-1.2.0</bigquery.connector.hadoop3.version>
         <avro.version>1.11.2</avro.version>
         <google.cloud.libraries.bom.version>26.1.5</google.cloud.libraries.bom.version>
+        <guava.version>31.1-jre</guava.version>
     </properties>
 
     <dependencyManagement>
@@ -28,11 +29,6 @@
                 <version>${google.cloud.libraries.bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.seatunnel</groupId>
-                <artifactId>seatunnel-shade</artifactId>
-                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -87,14 +83,8 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>31.1-jre</version>
+            <version>${guava.version}</version>
         </dependency>
-
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.seatunnel</groupId>-->
-        <!--            <artifactId>seatunnel-guava</artifactId>-->
-        <!--            <version>${project.version}</version>-->
-        <!--        </dependency>-->
 
         <dependency>
             <groupId>org.apache.seatunnel</groupId>
@@ -106,10 +96,6 @@
                 <exclusion>
                     <groupId>org.apache.avro</groupId>
                     <artifactId>avro</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -132,22 +118,12 @@
                                     <pattern>com.google.common</pattern>
                                     <shadedPattern>${seatunnel.shade.package}.google.bigquery.com.google.common</shadedPattern>
                                 </relocation>
-                                <relocation>
-                                    <pattern>com.google.protobuf</pattern>
-                                    <shadedPattern>${seatunnel.shade.package}.google.bigquery.com.google.protobuf</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.google.gson</pattern>
-                                    <shadedPattern>${seatunnel.shade.package}.google.bigquery.com.google.gson</shadedPattern>
-                                </relocation>
                             </relocations>
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/maven/**</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
