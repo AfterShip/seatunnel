@@ -47,6 +47,12 @@
             <groupId>org.apache.seatunnel</groupId>
             <artifactId>connector-common</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -131,7 +137,7 @@
                                 </relocation>
                                 <relocation>
                                     <pattern>com.google.gson</pattern>
-                                    <shadedPattern>${seatunnel.shade.package}.google.bigquery.com.google.zgson</shadedPattern>
+                                    <shadedPattern>${seatunnel.shade.package}.google.bigquery.com.google.gson</shadedPattern>
                                 </relocation>
                             </relocations>
                             <filters>
