@@ -128,7 +128,8 @@ public class BigQuerySource
                             getPluginName(),
                             PluginType.SOURCE,
                             BigQueryConnectorErrorCode.EXECUTE_SQL_FAILED.getDescription(),
-                            sql));
+                            sql),
+                    bigQueryException);
         }
 
         if (null != statistics) {

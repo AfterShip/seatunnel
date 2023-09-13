@@ -15,6 +15,7 @@ ENV CONFIG_CENTER_HOME="/opt/config_center"
 ENV SPARK_CONF_HOME=${SPARK_HOME}/conf
 ENV GCS_CONNECTOR_HADOOP_VERSION="2.2.12"
 ENV SPARK_METRIC_VERSION="1.0.1"
+ENV GUAVA_VERSION="27.0-jre"
 ENV SEATUNNEL_SOURCE="${SEATUNNEL_HOME}/source/"
 ENV SEATUNNEL_DIST="${SEATUNNEL_SOURCE}/seatunnel-dist"
 ENV SEATUNNEL_TOOL="${SEATUNNEL_SOURCE}/tools"
@@ -24,12 +25,13 @@ RUN apt-get update && apt-get -y --force-yes install wget && apt-get install pyt
 RUN wget -P ${SPARK_HOME}/jars/ https://nexus.automizely.org/repository/maven-releases/com/google/cloud/bigdataoss/gcs-connector/hadoop3-${GCS_CONNECTOR_HADOOP_VERSION}/gcs-connector-hadoop3-${GCS_CONNECTOR_HADOOP_VERSION}-shaded.jar
 RUN wget -P ${SPARK_HOME}/jars/ https://nexus.automizely.org/repository/maven-releases/com/automizely/data/data-dw-integration-spark-metric/${SPARK_METRIC_VERSION}/data-dw-integration-spark-metric-${SPARK_METRIC_VERSION}.jar
 
+RUN rm ${SPARK_HOME}/jars/guava*.jar
+RUN wget -P ${SPARK_HOME}/jars/ https://nexus.automizely.org/repository/maven-central/com/google/guava/guava/${GUAVA_VERSION}/guava-${GUAVA_VERSION}.jar
+
 RUN mkdir -p ${SEATUNNEL_HOME}
 RUN chmod 755 ${SEATUNNEL_HOME}
 RUN mkdir ${SPARK_CONF_HOME}
 RUN mkdir ${CONFIG_CENTER_HOME}
-COPY --from=builder ${SEATUNNEL_SOURCE}/config/metrics_*.properties /tmp/
-COPY --from=builder ${SEATUNNEL_SOURCE}/config/jmxCollector.yaml ${SPARK_CONF_HOME}
 COPY --from=builder ${SEATUNNEL_DIST}/target/apache-seatunnel*bin.tar.gz ${SEATUNNEL_HOME}/
 COPY --from=builder ${SEATUNNEL_TOOL}/config_center/ ${CONFIG_CENTER_HOME}/
 

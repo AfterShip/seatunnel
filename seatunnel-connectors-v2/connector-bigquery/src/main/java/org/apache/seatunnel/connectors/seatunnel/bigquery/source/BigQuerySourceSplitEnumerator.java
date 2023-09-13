@@ -153,7 +153,8 @@ public class BigQuerySourceSplitEnumerator
             } catch (Exception e) {
                 throw new BigQueryConnectorException(
                         BigQueryConnectorErrorCode.GET_BIGQUERY_SPLIT,
-                        "Get BigQuery split failed. " + e);
+                        "Get BigQuery split failed. " + e,
+                        e);
             }
             assignSplit(readers);
         }
@@ -170,7 +171,7 @@ public class BigQuerySourceSplitEnumerator
 
     @Override
     public void addSplitsBack(List<BigQuerySourceSplit> splits, int subtaskId) {
-        log.debug("Add back splits {} to IoTDBSourceSplitEnumerator.", splits);
+        log.debug("Add back splits {} to BigQuerySourceSplitEnumerator.", splits);
         if (!splits.isEmpty()) {
             addPendingSplit(splits);
             assignSplit(Collections.singletonList(subtaskId));

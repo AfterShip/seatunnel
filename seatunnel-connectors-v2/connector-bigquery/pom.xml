@@ -15,14 +15,25 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <google.cloud.bigquery.version>2.31.1</google.cloud.bigquery.version>
-        <google.api.services.storage>v1-rev171-1.25.0</google.api.services.storage>
         <bigquery.connector.hadoop3.version>hadoop3-1.2.0</bigquery.connector.hadoop3.version>
-        <spark.bigquery.connector.version>0.32.2</spark.bigquery.connector.version>
-        <google.cloud.storage.version>2.26.1</google.cloud.storage.version>
-        <gcs.connector.version>hadoop3-2.2.16</gcs.connector.version>
         <avro.version>1.11.2</avro.version>
+        <google.cloud.libraries.bom.version>26.1.5</google.cloud.libraries.bom.version>
+        <guava.version>31.1-jre</guava.version>
+        <bigquery.version>2.19.1</bigquery.version>
+        <google.cloud.storage.verison>2.15.1</google.cloud.storage.verison>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>libraries-bom</artifactId>
+                <version>${google.cloud.libraries.bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -39,24 +50,13 @@
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-bigquery</artifactId>
-            <version>${google.cloud.bigquery.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>animal-sniffer-annotations</artifactId>
-                </exclusion>
-            </exclusions>
+            <!--            <version>${bigquery.version}</version>-->
         </dependency>
 
-        <!-- Google Cloud Storage client library -->
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-storage</artifactId>
-            <version>${google.cloud.storage.version}</version>
+            <!--            <version>${google.cloud.storage.verison}</version>-->
         </dependency>
 
         <dependency>
@@ -69,6 +69,12 @@
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
             <version>${avro.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <!--            <version>${guava.version}</version>-->
         </dependency>
 
         <dependency>
@@ -85,4 +91,43 @@
             </exclusions>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.google.common</pattern>
+                                    <shadedPattern>${seatunnel.shade.package}.google.bigquery.com.google.common</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.google.gson</pattern>
+                                    <shadedPattern>${seatunnel.shade.package}.google.bigquery.com.google.gson</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
