@@ -1,12 +1,13 @@
 package org.apache.seatunnel.connectors.seatunnel.gcs.sink.writer;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.connectors.seatunnel.gcs.config.FileFormat;
 import org.apache.seatunnel.connectors.seatunnel.gcs.config.FileSinkConfig;
 import org.apache.seatunnel.connectors.seatunnel.gcs.util.FileSystemUtils;
 import org.apache.seatunnel.connectors.seatunnel.gcs.util.GCSPath;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.LinkedHashMap;
@@ -73,9 +74,15 @@ public abstract class AbstractWriteStrategy implements WriteStrategy {
     public String getOrCreateDirectory() {
         long logicalStartTime = System.currentTimeMillis();
         String suffix = fileSinkConfig.getSuffix();
-        String timeSuffix = StringUtils.isEmpty(suffix) ? "" : new SimpleDateFormat(suffix).format(logicalStartTime);
-        return GCSPath.SCHEME + fileSinkConfig.getPath()
-                + GCSPath.ROOT_DIR + timeSuffix + GCSPath.ROOT_DIR;
+        String timeSuffix =
+                StringUtils.isEmpty(suffix)
+                        ? ""
+                        : new SimpleDateFormat(suffix).format(logicalStartTime);
+        return GCSPath.SCHEME
+                + fileSinkConfig.getPath()
+                + GCSPath.ROOT_DIR
+                + timeSuffix
+                + GCSPath.ROOT_DIR;
     }
 
     public String getOrCreateFilePath() {
@@ -88,5 +95,4 @@ public abstract class AbstractWriteStrategy implements WriteStrategy {
             return newBeingWrittenFilePath;
         }
     }
-
 }

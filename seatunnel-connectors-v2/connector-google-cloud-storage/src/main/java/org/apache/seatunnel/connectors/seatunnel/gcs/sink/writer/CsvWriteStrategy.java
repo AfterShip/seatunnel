@@ -1,11 +1,11 @@
 package org.apache.seatunnel.connectors.seatunnel.gcs.sink.writer;
 
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.seatunnel.api.table.type.*;
 import org.apache.seatunnel.common.exception.CommonErrorCode;
 import org.apache.seatunnel.connectors.seatunnel.gcs.config.FileSinkConfig;
 import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -46,9 +46,9 @@ public class CsvWriteStrategy extends AbstractWriteStrategy {
             writer.write(record);
             writer.newLine();
         } catch (IOException e) {
-            String errorMsg = String.format("Write record [%s] to file [%s] error", record, filePath);
-            throw new GcsConnectorException(
-                    CommonErrorCode.WRITER_OPERATION_FAILED, errorMsg, e);
+            String errorMsg =
+                    String.format("Write record [%s] to file [%s] error", record, filePath);
+            throw new GcsConnectorException(CommonErrorCode.WRITER_OPERATION_FAILED, errorMsg, e);
         }
     }
 
@@ -80,7 +80,8 @@ public class CsvWriteStrategy extends AbstractWriteStrategy {
         if (writer == null) {
             try {
                 BufferedWriter newWriter =
-                        new BufferedWriter(new OutputStreamWriter(fileSystemUtils.getOutputStream(filePath)));
+                        new BufferedWriter(
+                                new OutputStreamWriter(fileSystemUtils.getOutputStream(filePath)));
                 this.beingWrittenOutputStream.put(filePath, newWriter);
                 return newWriter;
             } catch (IOException e) {
@@ -117,10 +118,15 @@ public class CsvWriteStrategy extends AbstractWriteStrategy {
             case DECIMAL:
                 return field.toString();
             case DATE:
-                return String.valueOf(((LocalDate) field).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli());
-            // Unsupported TIME:
+                return String.valueOf(
+                        ((LocalDate) field)
+                                .atStartOfDay(ZoneOffset.UTC)
+                                .toInstant()
+                                .toEpochMilli());
+                // Unsupported TIME:
             case TIMESTAMP:
-                return String.valueOf(((LocalDateTime) field).toInstant(ZoneOffset.UTC).toEpochMilli());
+                return String.valueOf(
+                        ((LocalDateTime) field).toInstant(ZoneOffset.UTC).toEpochMilli());
             case NULL:
                 return "";
             case BYTES:
@@ -135,16 +141,16 @@ public class CsvWriteStrategy extends AbstractWriteStrategy {
                 SeaTunnelDataType<?> valueType = ((MapType<?, ?>) fieldType).getValueType();
                 return ((Map<Object, Object>) field)
                         .entrySet().stream()
-                        .map(
-                                entry ->
-                                        String.join(
-                                                SEPARATOR[level + 2],
-                                                convert(entry.getKey(), keyType, level + 1),
-                                                convert(
-                                                        entry.getValue(),
-                                                        valueType,
-                                                        level + 1)))
-                        .collect(Collectors.joining(SEPARATOR[level + 1]));
+                                .map(
+                                        entry ->
+                                                String.join(
+                                                        SEPARATOR[level + 2],
+                                                        convert(entry.getKey(), keyType, level + 1),
+                                                        convert(
+                                                                entry.getValue(),
+                                                                valueType,
+                                                                level + 1)))
+                                .collect(Collectors.joining(SEPARATOR[level + 1]));
             case ROW:
                 Object[] fields = ((SeaTunnelRow) field).getFields();
                 String[] strings = new String[fields.length];
@@ -164,5 +170,4 @@ public class CsvWriteStrategy extends AbstractWriteStrategy {
                                 fieldType.getSqlType()));
         }
     }
-
 }

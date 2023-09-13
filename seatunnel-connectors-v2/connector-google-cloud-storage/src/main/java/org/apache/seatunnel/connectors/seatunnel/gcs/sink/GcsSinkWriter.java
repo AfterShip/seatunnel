@@ -1,6 +1,5 @@
 package org.apache.seatunnel.connectors.seatunnel.gcs.sink;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.seatunnel.api.sink.SinkWriter;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.common.exception.CommonErrorCode;
@@ -8,6 +7,8 @@ import org.apache.seatunnel.connectors.seatunnel.common.sink.AbstractSinkWriter;
 import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
 import org.apache.seatunnel.connectors.seatunnel.gcs.sink.writer.WriteStrategy;
 import org.apache.seatunnel.connectors.seatunnel.gcs.util.FileSystemUtils;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -18,9 +19,7 @@ public class GcsSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void> {
     private WriteStrategy writeStrategy;
     private FileSystemUtils fileSystemUtils;
 
-    public GcsSinkWriter(
-            WriteStrategy writeStrategy,
-            SinkWriter.Context context) {
+    public GcsSinkWriter(WriteStrategy writeStrategy, SinkWriter.Context context) {
         this.writeStrategy = writeStrategy;
         this.fileSystemUtils = writeStrategy.getFileSystemUtils();
     }
@@ -42,8 +41,5 @@ public class GcsSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void> {
     }
 
     @Override
-    public void close() throws IOException {
-
-    }
-
+    public void close() throws IOException {}
 }

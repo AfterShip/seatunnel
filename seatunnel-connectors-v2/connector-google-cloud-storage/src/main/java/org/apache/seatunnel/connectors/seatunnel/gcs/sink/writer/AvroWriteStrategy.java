@@ -1,17 +1,18 @@
 package org.apache.seatunnel.connectors.seatunnel.gcs.sink.writer;
 
-import lombok.extern.slf4j.Slf4j;
+import org.apache.seatunnel.common.exception.CommonErrorCode;
+import org.apache.seatunnel.connectors.seatunnel.gcs.config.FileSinkConfig;
+import org.apache.seatunnel.connectors.seatunnel.gcs.exception.AvroFormatErrorCode;
+import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
+
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.generic.GenericRecordBuilder;
-import org.apache.seatunnel.api.table.type.*;
-import org.apache.seatunnel.common.exception.CommonErrorCode;
-import org.apache.seatunnel.connectors.seatunnel.gcs.config.FileSinkConfig;
-import org.apache.seatunnel.connectors.seatunnel.gcs.exception.AvroFormatErrorCode;
-import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -48,7 +49,8 @@ public class AvroWriteStrategy extends AbstractWriteStrategy {
         try {
             writer.append(record);
         } catch (Exception e) {
-            throw new GcsConnectorException(CommonErrorCode.FILE_OPERATION_FAILED,
+            throw new GcsConnectorException(
+                    CommonErrorCode.FILE_OPERATION_FAILED,
                     String.format("Open file output stream [%s] failed", filePath),
                     e);
         }
@@ -105,7 +107,9 @@ public class AvroWriteStrategy extends AbstractWriteStrategy {
         for (int i = 0; i < fieldNames.length; i++) {
             String fieldName = this.seaTunnelRowType.getFieldName(i);
             Object value = element.getField(i);
-            builder.set(fieldName.toLowerCase(), resolveObject(value, this.seaTunnelRowType.getFieldType(i)));
+            builder.set(
+                    fieldName.toLowerCase(),
+                    resolveObject(value, this.seaTunnelRowType.getFieldType(i)));
         }
         return builder.build();
     }
@@ -151,7 +155,8 @@ public class AvroWriteStrategy extends AbstractWriteStrategy {
                 SeaTunnelDataType<?> valueType = ((MapType<?, ?>) seaTunnelDataType).getValueType();
                 return Schema.createMap(seaTunnelDataType2AvroDataType(fieldName, valueType));
             case ARRAY:
-                SeaTunnelDataType<?> elementType = ((ArrayType<?, ?>) seaTunnelDataType).getElementType();
+                SeaTunnelDataType<?> elementType =
+                        ((ArrayType<?, ?>) seaTunnelDataType).getElementType();
                 return Schema.createArray(seaTunnelDataType2AvroDataType(fieldName, elementType));
             case ROW:
                 SeaTunnelDataType<?>[] fieldTypes =
@@ -216,7 +221,8 @@ public class AvroWriteStrategy extends AbstractWriteStrategy {
             case BYTES:
                 return ByteBuffer.wrap((byte[]) data);
             case ARRAY:
-                SeaTunnelDataType<?> basicType = ((ArrayType<?, ?>) seaTunnelDataType).getElementType();
+                SeaTunnelDataType<?> basicType =
+                        ((ArrayType<?, ?>) seaTunnelDataType).getElementType();
                 List<Object> records = new ArrayList<>(((Object[]) data).length);
                 for (Object object : (Object[]) data) {
                     Object resolvedObject = resolveObject(object, basicType);
@@ -239,9 +245,7 @@ public class AvroWriteStrategy extends AbstractWriteStrategy {
                 return recordBuilder.build();
             case TIMESTAMP:
                 LocalDateTime dateTime = (LocalDateTime) data;
-                return (dateTime)
-                        .toInstant(ZoneOffset.UTC)
-                        .toEpochMilli();
+                return (dateTime).toInstant(ZoneOffset.UTC).toEpochMilli();
             default:
                 String errorMsg =
                         String.format(
@@ -251,5 +255,4 @@ public class AvroWriteStrategy extends AbstractWriteStrategy {
                         AvroFormatErrorCode.UNSUPPORTED_DATA_TYPE, errorMsg);
         }
     }
-
 }

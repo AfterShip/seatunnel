@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -30,8 +29,8 @@
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>
-                    <artifactId>google-api-services-storage</artifactId>
                     <groupId>com.google.apis</groupId>
+                    <artifactId>google-api-services-storage</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -100,24 +99,24 @@
                     <artifactId>zookeeper</artifactId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>guava</artifactId>
                     <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>com.sun.jersey</groupId>
                     <artifactId>jersey-core</artifactId>
-                    <groupId>com.sun.jersey</groupId>
                 </exclusion>
                 <exclusion>
+                    <groupId>com.sun.jersey</groupId>
                     <artifactId>jersey-json</artifactId>
-                    <groupId>com.sun.jersey</groupId>
                 </exclusion>
                 <exclusion>
+                    <groupId>com.sun.jersey</groupId>
                     <artifactId>jersey-server</artifactId>
-                    <groupId>com.sun.jersey</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>servlet-api</artifactId>
                     <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.mortbay.jetty</groupId>
@@ -128,20 +127,20 @@
                     <artifactId>jetty-util</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>tomcat</groupId>
                     <artifactId>jasper-compiler</artifactId>
-                    <groupId>tomcat</groupId>
                 </exclusion>
                 <exclusion>
+                    <groupId>tomcat</groupId>
                     <artifactId>jasper-runtime</artifactId>
-                    <groupId>tomcat</groupId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>jsp-api</artifactId>
                     <groupId>javax.servlet.jsp</groupId>
+                    <artifactId>jsp-api</artifactId>
                 </exclusion>
                 <exclusion>
-                    <artifactId>slf4j-api</artifactId>
                     <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

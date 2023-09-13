@@ -1,6 +1,5 @@
 package org.apache.seatunnel.connectors.seatunnel.gcs.exception;
 
-
 import org.apache.seatunnel.common.exception.SeaTunnelErrorCode;
 
 public enum AvroFormatErrorCode implements SeaTunnelErrorCode {

@@ -1,7 +1,9 @@
 package org.apache.seatunnel.connectors.seatunnel.gcs.sink.writer;
 
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.seatunnel.common.exception.CommonErrorCode;
+import org.apache.seatunnel.connectors.seatunnel.gcs.config.FileSinkConfig;
+import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
+
 import org.apache.avro.Conversions;
 import org.apache.avro.Schema;
 import org.apache.avro.data.TimeConversions;
@@ -15,17 +17,14 @@ import org.apache.parquet.column.ParquetProperties;
 import org.apache.parquet.hadoop.ParquetFileWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.util.HadoopOutputFile;
-import org.apache.parquet.schema.*;
-import org.apache.seatunnel.api.table.type.*;
-import org.apache.seatunnel.common.exception.CommonErrorCode;
-import org.apache.seatunnel.connectors.seatunnel.gcs.config.FileSinkConfig;
-import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -58,7 +57,8 @@ public class ParquetWriteStrategy extends AbstractWriteStrategy {
         try {
             writer.write(record);
         } catch (Exception e) {
-            throw new GcsConnectorException(CommonErrorCode.FILE_OPERATION_FAILED,
+            throw new GcsConnectorException(
+                    CommonErrorCode.FILE_OPERATION_FAILED,
                     String.format("Open file output stream [%s] failed", filePath),
                     e);
         }
@@ -93,7 +93,9 @@ public class ParquetWriteStrategy extends AbstractWriteStrategy {
         for (int i = 0; i < fieldNames.length; i++) {
             String fieldName = this.seaTunnelRowType.getFieldName(i);
             Object value = element.getField(i);
-            builder.set(fieldName.toLowerCase(), resolveObject(value, this.seaTunnelRowType.getFieldType(i)));
+            builder.set(
+                    fieldName.toLowerCase(),
+                    resolveObject(value, this.seaTunnelRowType.getFieldType(i)));
         }
         return builder.build();
     }
@@ -139,8 +141,7 @@ public class ParquetWriteStrategy extends AbstractWriteStrategy {
                                 .boxed()
                                 .collect(Collectors.toList());
                 Schema recordSchema =
-                        buildAvroSchemaWithRowType(
-                                (SeaTunnelRowType) seaTunnelDataType);
+                        buildAvroSchemaWithRowType((SeaTunnelRowType) seaTunnelDataType);
                 GenericRecordBuilder recordBuilder = new GenericRecordBuilder(recordSchema);
                 for (int i = 0; i < fieldNames.length; i++) {
                     recordBuilder.set(
@@ -170,8 +171,10 @@ public class ParquetWriteStrategy extends AbstractWriteStrategy {
             Path path = new Path(filePath);
             try {
                 HadoopOutputFile outputFile =
-                        HadoopOutputFile.fromPath(path,
-                                fileSystemUtils.getConfiguration(fileSinkConfig.getProjectId(), filePath));
+                        HadoopOutputFile.fromPath(
+                                path,
+                                fileSystemUtils.getConfiguration(
+                                        fileSinkConfig.getProjectId(), filePath));
                 ParquetWriter<GenericRecord> newWriter =
                         AvroParquetWriter.<GenericRecord>builder(outputFile)
                                 .withWriteMode(ParquetFileWriter.Mode.OVERWRITE)
@@ -191,19 +194,18 @@ public class ParquetWriteStrategy extends AbstractWriteStrategy {
         return writer;
     }
 
-    private Schema buildAvroSchemaWithRowType(
-            SeaTunnelRowType seaTunnelRowType) {
+    private Schema buildAvroSchemaWithRowType(SeaTunnelRowType seaTunnelRowType) {
         ArrayList<Type> types = new ArrayList<>();
         SeaTunnelDataType<?>[] fieldTypes = seaTunnelRowType.getFieldTypes();
         String[] fieldNames = seaTunnelRowType.getFieldNames();
-        Map<String, Integer> columnsMap =
-                new HashMap<>(fieldNames.length);
+        Map<String, Integer> columnsMap = new HashMap<>(fieldNames.length);
         for (int i = 0; i < fieldNames.length; i++) {
             columnsMap.put(fieldNames[i].toLowerCase(), i);
         }
-        List<Integer> sinkColumnsIndex = Arrays.asList(seaTunnelRowType.getFieldNames()).stream()
-                .map(column -> columnsMap.get(column.toLowerCase()))
-                .collect(Collectors.toList());
+        List<Integer> sinkColumnsIndex =
+                Arrays.asList(seaTunnelRowType.getFieldNames()).stream()
+                        .map(column -> columnsMap.get(column.toLowerCase()))
+                        .collect(Collectors.toList());
         sinkColumnsIndex.forEach(
                 index -> {
                     Type type =
