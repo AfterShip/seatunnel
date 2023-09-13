@@ -19,14 +19,8 @@ package org.apache.seatunnel.connectors.seatunnel.elasticsearch.util;
 
 import io.airlift.security.pem.PemReader;
 
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import javax.security.auth.x500.X500Principal;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
