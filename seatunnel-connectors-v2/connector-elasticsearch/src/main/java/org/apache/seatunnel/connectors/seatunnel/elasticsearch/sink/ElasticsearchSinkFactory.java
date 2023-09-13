@@ -17,14 +17,22 @@
 
 package org.apache.seatunnel.connectors.seatunnel.elasticsearch.sink;
 
-import com.google.auto.service.AutoService;
 import org.apache.seatunnel.api.configuration.util.OptionRule;
 import org.apache.seatunnel.api.table.factory.Factory;
 import org.apache.seatunnel.api.table.factory.TableSinkFactory;
 
+import com.google.auto.service.AutoService;
+
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.EsClusterConnectionConfig.PASSWORD;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.EsClusterConnectionConfig.USERNAME;
-import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.*;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.BATCH_NUMBER;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.CLUSTER;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.ID_FIELD;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.ID_FIELD_IGNORED;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.INDEX;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.INDEX_TYPE;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.KEY_DELIMITER;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.MAX_RETRY_COUNT;
 
 @AutoService(Factory.class)
 public class ElasticsearchSinkFactory implements TableSinkFactory {

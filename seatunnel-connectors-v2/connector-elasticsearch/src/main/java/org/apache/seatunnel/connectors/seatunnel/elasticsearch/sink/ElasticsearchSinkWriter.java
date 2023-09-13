@@ -17,7 +17,8 @@
 
 package org.apache.seatunnel.connectors.seatunnel.elasticsearch.sink;
 
-import lombok.extern.slf4j.Slf4j;
+import org.apache.seatunnel.shade.com.typesafe.config.Config;
+
 import org.apache.seatunnel.api.sink.SinkWriter;
 import org.apache.seatunnel.api.table.type.RowKind;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
@@ -33,10 +34,10 @@ import org.apache.seatunnel.connectors.seatunnel.elasticsearch.serialize.Elastic
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.serialize.SeaTunnelRowSerializer;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.state.ElasticsearchCommitInfo;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.state.ElasticsearchSinkState;
-import org.apache.seatunnel.shade.com.typesafe.config.Config;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -72,8 +73,7 @@ public class ElasticsearchSinkWriter
         this.maxBatchSizeMb = maxBatchSizeMb;
         esRestClient = EsRestClient.createInstance(pluginConfig);
         this.seaTunnelRowSerializer =
-                new ElasticsearchRowSerializer(
-                        pluginConfig, seaTunnelRowType);
+                new ElasticsearchRowSerializer(pluginConfig, seaTunnelRowType);
         this.requestEsList = new ArrayList<>(maxBatchNumber);
         this.retryMaterial =
                 new RetryMaterial(maxRetryCount, true, exception -> true, DEFAULT_SLEEP_TIME_MS);
@@ -86,7 +86,8 @@ public class ElasticsearchSinkWriter
         }
         String indexRequestRow = seaTunnelRowSerializer.serializeRow(element);
         requestEsList.add(indexRequestRow);
-        bytesCount += indexRequestRow.getBytes().length;;
+        bytesCount += indexRequestRow.getBytes().length;
+        ;
         if (requestEsList.size() >= maxBatchNumber
                 || bytesCount >= (long) maxBatchSizeMb * 1024 * 1024) {
             bulkEsWithRetry(this.esRestClient, this.requestEsList);

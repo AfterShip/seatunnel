@@ -5,14 +5,11 @@ import lombok.Data;
 
 /**
  * @author wq.pan on 2023/8/7
- * @className ProxyContext
- * @Description
- * @Version: 1.0
+ * @className ProxyContext @Description @Version: 1.0
  */
 @Data
 public class ProxyContext {
-    public ProxyContext() {
-    }
+    public ProxyContext() {}
 
     public ProxyContext(String host, String user, String password) {
         this.host = host;

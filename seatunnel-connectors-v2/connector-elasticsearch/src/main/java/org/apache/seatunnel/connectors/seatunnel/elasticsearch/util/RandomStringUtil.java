@@ -4,19 +4,16 @@ import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author wq.pan on 2023/8/7
- * @className RandomStringUtil
- * @Description
- * @Version: 1.0
+ * @className RandomStringUtil @Description @Version: 1.0
  */
 public class RandomStringUtil {
 
-    private static final String BASE_STR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final String BASE_STR =
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     private static final int DEFAULT_STR_SIZE = 5;
 
-    private RandomStringUtil() {
-
-    }
+    private RandomStringUtil() {}
 
     public static String randomString() {
         return randomString(DEFAULT_STR_SIZE);
@@ -32,4 +29,3 @@ public class RandomStringUtil {
         return builder.toString();
     }
 }
-
