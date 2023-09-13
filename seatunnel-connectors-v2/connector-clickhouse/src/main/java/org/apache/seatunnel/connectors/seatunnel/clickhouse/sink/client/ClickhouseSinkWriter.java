@@ -17,7 +17,6 @@
 
 package org.apache.seatunnel.connectors.seatunnel.clickhouse.sink.client;
 
-import com.clickhouse.client.config.ClickHouseClientOption;
 import org.apache.seatunnel.api.sink.SinkWriter;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.common.config.Common;
@@ -34,17 +33,18 @@ import org.apache.seatunnel.connectors.seatunnel.clickhouse.tool.IntHolder;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.clickhouse.client.config.ClickHouseClientOption;
 import com.clickhouse.jdbc.internal.ClickHouseConnectionImpl;
 import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -110,9 +110,9 @@ public class ClickhouseSinkWriter
         this.proxy.close();
         for (ClickhouseBatchStatement batchStatement : statementMap.values()) {
             try (ClickHouseConnectionImpl needClosedConnection =
-                         batchStatement.getClickHouseConnection();
-                 JdbcBatchStatementExecutor needClosedStatement =
-                         batchStatement.getJdbcBatchStatementExecutor()) {
+                            batchStatement.getClickHouseConnection();
+                    JdbcBatchStatementExecutor needClosedStatement =
+                            batchStatement.getJdbcBatchStatementExecutor()) {
                 IntHolder intHolder = batchStatement.getIntHolder();
                 if (intHolder.getValue() > 0) {
                     flush(needClosedStatement);
@@ -152,11 +152,14 @@ public class ClickhouseSinkWriter
     private Map<Shard, ClickhouseBatchStatement> initStatementMap() {
         try {
             Properties optionProperties = this.option.getProperties();
-            this.caPemPath = optionProperties.getProperty(ClickHouseClientOption.SSL_ROOT_CERTIFICATE.getKey());
-            String dbSSLRootCRT = optionProperties.getProperty(ClickHouseConstants.NAME_CA_PEM_VALUE);
+            this.caPemPath =
+                    optionProperties.getProperty(
+                            ClickHouseClientOption.SSL_ROOT_CERTIFICATE.getKey());
+            String dbSSLRootCRT =
+                    optionProperties.getProperty(ClickHouseConstants.NAME_CA_PEM_VALUE);
             File file = new File(this.caPemPath);
 
-            //if file doesnt exists, then create it
+            // if file doesnt exists, then create it
             if (!file.exists()) {
                 file.createNewFile();
                 FileWriter fileWritter = new FileWriter(file.getAbsoluteFile(), true);
@@ -195,7 +198,8 @@ public class ClickhouseSinkWriter
                                                 .setOrderByKeys(orderByKeys)
                                                 .setClickhouseTableSchema(option.getTableSchema())
                                                 .setAllowExperimentalLightweightDelete(
-                                                        option.isAllowExperimentalLightweightDelete())
+                                                        option
+                                                                .isAllowExperimentalLightweightDelete())
                                                 .setClickhouseServerEnableExperimentalLightweightDelete(
                                                         clickhouseServerEnableExperimentalLightweightDelete(
                                                                 clickhouseConnection))
