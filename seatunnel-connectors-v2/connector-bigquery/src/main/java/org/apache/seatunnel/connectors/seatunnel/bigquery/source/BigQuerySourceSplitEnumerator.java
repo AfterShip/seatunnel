@@ -171,7 +171,7 @@ public class BigQuerySourceSplitEnumerator
 
     @Override
     public void addSplitsBack(List<BigQuerySourceSplit> splits, int subtaskId) {
-        log.debug("Add back splits {} to IoTDBSourceSplitEnumerator.", splits);
+        log.debug("Add back splits {} to BigQuerySourceSplitEnumerator.", splits);
         if (!splits.isEmpty()) {
             addPendingSplit(splits);
             assignSplit(Collections.singletonList(subtaskId));
