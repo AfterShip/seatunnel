@@ -29,7 +29,8 @@ public enum ClickhouseConnectorErrorCode implements SeaTunnelErrorCode {
     CLUSTER_LIST_GET_FAILED("CLICKHOUSE-05", "Get cluster list from clickhouse failed"),
     SHARD_KEY_NOT_FOUND("CLICKHOUSE-06", "Shard key not found in table"),
     FILE_NOT_EXISTS("CLICKHOUSE-07", "Clickhouse local file not exists"),
-    SQL_EXECUTE_FAILED("API-10", "SQL execute failed"),;
+    SQL_EXECUTE_FAILED("API-10", "SQL execute failed"),
+    ;
 
     private final String code;
     private final String description;

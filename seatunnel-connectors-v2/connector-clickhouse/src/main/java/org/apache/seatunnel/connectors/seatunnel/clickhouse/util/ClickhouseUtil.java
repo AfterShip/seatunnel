@@ -36,7 +36,11 @@ public class ClickhouseUtil {
     }
 
     public static List<ClickHouseNode> createNodes(
-            String nodeAddress, String database, String username, String password, Map<String, String> options) {
+            String nodeAddress,
+            String database,
+            String username,
+            String password,
+            Map<String, String> options) {
         return Arrays.stream(nodeAddress.split(","))
                 .map(
                         address -> {

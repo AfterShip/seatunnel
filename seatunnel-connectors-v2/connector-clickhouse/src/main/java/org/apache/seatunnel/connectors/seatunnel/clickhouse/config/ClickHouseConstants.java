@@ -42,14 +42,9 @@ public final class ClickHouseConstants {
     public static final int CLICKHOUSE_SOCKET_TIMEOUT = 3600 * 1000;
     public static final int CLICKHOUSE_CONNECTION_TIMEOUT = 10 * 1000;
 
-    /**
-     * 删除数据分区，硬删除
-     */
+    /** 删除数据分区，硬删除 */
     public static final String ALTER_DROP_PARTITION = "ALTER TABLE %s.%s  DROP PARTITION '%s' ;";
 
-    /**
-     * 清空表数据
-     * TRUNCATE TABLE [IF EXISTS] [db.]name [ON CLUSTER cluster]
-     */
+    /** 清空表数据 TRUNCATE TABLE [IF EXISTS] [db.]name [ON CLUSTER cluster] */
     public static final String TRUNCATE_TABLE = "TRUNCATE TABLE %s.%s on cluster default_cluster;";
 }

@@ -5,8 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 public class ProxyContext {
-    public ProxyContext() {
-    }
+    public ProxyContext() {}
 
     public ProxyContext(String host, String user, String password) {
         this.host = host;
@@ -22,7 +21,6 @@ public class ProxyContext {
 
     @JsonProperty("password")
     private String password;
-
 
     public String getHost() {
         return host;
@@ -53,9 +51,9 @@ public class ProxyContext {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ProxyContext that = (ProxyContext) o;
-        return Objects.equals(host, that.host) &&
-                Objects.equals(user, that.user) &&
-                Objects.equals(password, that.password);
+        return Objects.equals(host, that.host)
+                && Objects.equals(user, that.user)
+                && Objects.equals(password, that.password);
     }
 
     @Override

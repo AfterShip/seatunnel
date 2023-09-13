@@ -101,8 +101,9 @@ public class ClickhouseConfig {
             Options.key("use_local")
                     .booleanType()
                     .defaultValue(true)
-                    .withDescription("When use_local is true, ClickhouseFile sink connector " +
-                            "will commit into local table");
+                    .withDescription(
+                            "When use_local is true, ClickhouseFile sink connector "
+                                    + "will commit into local table");
 
     /** Split mode when table is distributed engine */
     public static final Option<Boolean> SPLIT_MODE =
@@ -203,27 +204,23 @@ public class ClickhouseConfig {
             Options.key("write_mode")
                     .stringType()
                     .defaultValue("append")
-                    .withDescription(
-                            "Write mode");
+                    .withDescription("Write mode");
 
     public static final Option<String> IMPORT_MODE =
             Options.key("import_mode")
                     .stringType()
                     .defaultValue("all")
-                    .withDescription(
-                            "Import mode");
+                    .withDescription("Import mode");
 
     public static final Option<String> PARTITION_VALUE =
             Options.key("partition_value")
                     .stringType()
                     .noDefaultValue()
-                    .withDescription(
-                            "ClickHouse partition value, can be null");
+                    .withDescription("ClickHouse partition value, can be null");
 
     public static final Option<String> CLUSTER =
             Options.key("cluster")
                     .stringType()
                     .defaultValue("prod-data")
-                    .withDescription(
-                            "The name of cluster.");
+                    .withDescription("The name of cluster.");
 }
