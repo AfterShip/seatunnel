@@ -1,5 +1,11 @@
 package org.apache.seatunnel.connectors.seatunnel.gcs.sink.writer;
 
+import org.apache.seatunnel.api.table.type.ArrayType;
+import org.apache.seatunnel.api.table.type.DecimalType;
+import org.apache.seatunnel.api.table.type.MapType;
+import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
+import org.apache.seatunnel.api.table.type.SeaTunnelRow;
+import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.common.exception.CommonErrorCode;
 import org.apache.seatunnel.connectors.seatunnel.gcs.config.FileSinkConfig;
 import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
@@ -17,6 +23,13 @@ import org.apache.parquet.column.ParquetProperties;
 import org.apache.parquet.hadoop.ParquetFileWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.util.HadoopOutputFile;
+import org.apache.parquet.schema.ConversionPatterns;
+import org.apache.parquet.schema.LogicalTypeAnnotation;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.OriginalType;
+import org.apache.parquet.schema.PrimitiveType;
+import org.apache.parquet.schema.Type;
+import org.apache.parquet.schema.Types;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +38,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -101,9 +120,7 @@ public class ParquetWriteStrategy extends AbstractWriteStrategy {
     }
 
     private Object resolveObject(Object data, SeaTunnelDataType<?> seaTunnelDataType) {
-        if (data == null) {
-            return null;
-        }
+        if (data == null) return null;
         switch (seaTunnelDataType.getSqlType()) {
             case ARRAY:
                 SeaTunnelDataType<?> elementType =

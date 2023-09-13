@@ -2,6 +2,12 @@ package org.apache.seatunnel.connectors.seatunnel.gcs.sink.json;
 
 import org.apache.seatunnel.shade.com.fasterxml.jackson.core.JsonGenerator;
 
+import org.apache.seatunnel.api.table.type.ArrayType;
+import org.apache.seatunnel.api.table.type.MapType;
+import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
+import org.apache.seatunnel.api.table.type.SeaTunnelRow;
+import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
+import org.apache.seatunnel.api.table.type.SqlType;
 import org.apache.seatunnel.common.exception.CommonErrorCode;
 import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
 

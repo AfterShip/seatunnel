@@ -6,7 +6,13 @@ import org.apache.seatunnel.api.table.factory.TableSinkFactory;
 
 import com.google.auto.service.AutoService;
 
-static @AutoService(Factory.class) public class GcsSinkFactory implements TableSinkFactory {
+import static org.apache.seatunnel.connectors.seatunnel.gcs.config.GcsSinkConfig.FORMAT;
+import static org.apache.seatunnel.connectors.seatunnel.gcs.config.GcsSinkConfig.PATH;
+import static org.apache.seatunnel.connectors.seatunnel.gcs.config.GcsSinkConfig.PROJECT_ID;
+import static org.apache.seatunnel.connectors.seatunnel.gcs.config.GcsSinkConfig.SUFFIX;
+
+@AutoService(Factory.class)
+public class GcsSinkFactory implements TableSinkFactory {
 
     @Override
     public String factoryIdentifier() {

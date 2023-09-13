@@ -1,5 +1,10 @@
 package org.apache.seatunnel.connectors.seatunnel.gcs.sink.writer;
 
+import org.apache.seatunnel.api.table.type.ArrayType;
+import org.apache.seatunnel.api.table.type.MapType;
+import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
+import org.apache.seatunnel.api.table.type.SeaTunnelRow;
+import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.common.exception.CommonErrorCode;
 import org.apache.seatunnel.connectors.seatunnel.gcs.config.FileSinkConfig;
 import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
