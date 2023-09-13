@@ -128,7 +128,8 @@ public class BigQuerySource
                             getPluginName(),
                             PluginType.SOURCE,
                             BigQueryConnectorErrorCode.EXECUTE_SQL_FAILED.getDescription(),
-                            sql));
+                            sql),
+                    bigQueryException);
         }
 
         if (null != statistics) {
@@ -398,9 +399,7 @@ public class BigQuerySource
             }
             return filter;
         } else {
-            throw new BigQueryConnectorException(
-                    SeaTunnelAPIErrorCode.CONFIG_VALIDATION_FAILED,
-                    "Ensure filter should be not null.");
+            return "1=1";
         }
     }
 }

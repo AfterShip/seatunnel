@@ -150,7 +150,8 @@ public class BigQueryDeserializer implements SeaTunnelRowDeserializer {
             throw new BigQueryConnectorException(
                     BigQueryConnectorErrorCode.UNSUPPORTED,
                     String.format(
-                            "Field type %s has value that is too large.", fieldSchema.getType()));
+                            "Field type %s has value that is too large.", fieldSchema.getType()),
+                    e);
         }
         return null;
     }
