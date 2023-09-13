@@ -1,13 +1,20 @@
 package org.apache.seatunnel.connectors.seatunnel.bigtable.utils;
 
-import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.io.Writable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import com.google.common.base.Preconditions;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * @author: gf.xu
@@ -24,12 +31,10 @@ public class HBaseConfigurationUtil {
         // the classpath.
         Configuration configuration = HBaseConfiguration.create();
 
-
         // we using bigtable, so will not load from hbase-default.xml and hbase-site.xml from
         //  the classpath.
         return configuration;
     }
-
 
     /**
      * Deserialize a Hadoop {@link Configuration} from byte[]. Deserialize configs to {@code
@@ -48,7 +53,6 @@ public class HBaseConfigurationUtil {
         }
         return targetConfig;
     }
-
 
     /** Serialize a Hadoop {@link Configuration} into byte[]. */
     public static byte[] serializeConfiguration(Configuration conf) {

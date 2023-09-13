@@ -1,11 +1,12 @@
 package org.apache.seatunnel.connectors.seatunnel.spanner.source;
 
+import org.apache.seatunnel.api.source.SourceSplit;
+
 import com.google.cloud.spanner.BatchTransactionId;
 import com.google.cloud.spanner.Partition;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
-import org.apache.seatunnel.api.source.SourceSplit;
 
 /**
  * @author: gf.xu
@@ -19,8 +20,7 @@ public class SpannerSourceSplit implements SourceSplit {
 
     private static final long serialVersionUID = -1L;
 
-
-   private BatchTransactionId transactionId;
+    private BatchTransactionId transactionId;
 
     private Partition partition;
 

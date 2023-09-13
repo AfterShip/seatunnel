@@ -3,7 +3,11 @@ package org.apache.seatunnel.connectors.seatunnel.spanner.catalog;
 import org.apache.seatunnel.api.table.catalog.Catalog;
 import org.apache.seatunnel.api.table.catalog.CatalogTable;
 import org.apache.seatunnel.api.table.catalog.TablePath;
-import org.apache.seatunnel.api.table.catalog.exception.*;
+import org.apache.seatunnel.api.table.catalog.exception.CatalogException;
+import org.apache.seatunnel.api.table.catalog.exception.DatabaseAlreadyExistException;
+import org.apache.seatunnel.api.table.catalog.exception.DatabaseNotExistException;
+import org.apache.seatunnel.api.table.catalog.exception.TableAlreadyExistException;
+import org.apache.seatunnel.api.table.catalog.exception.TableNotExistException;
 
 import java.util.List;
 
@@ -16,7 +20,6 @@ import java.util.List;
  */
 public class SpannerCatalog implements Catalog {
 
-
     public SpannerCatalog(
             String catalogName,
             String projectId,
@@ -27,14 +30,10 @@ public class SpannerCatalog implements Catalog {
     }
 
     @Override
-    public void open() throws CatalogException {
-
-    }
+    public void open() throws CatalogException {}
 
     @Override
-    public void close() throws CatalogException {
-
-    }
+    public void close() throws CatalogException {}
 
     @Override
     public String getDefaultDatabase() throws CatalogException {
@@ -52,7 +51,8 @@ public class SpannerCatalog implements Catalog {
     }
 
     @Override
-    public List<String> listTables(String databaseName) throws CatalogException, DatabaseNotExistException {
+    public List<String> listTables(String databaseName)
+            throws CatalogException, DatabaseNotExistException {
         return null;
     }
 
@@ -62,31 +62,24 @@ public class SpannerCatalog implements Catalog {
     }
 
     @Override
-    public CatalogTable getTable(TablePath tablePath) throws CatalogException, TableNotExistException {
+    public CatalogTable getTable(TablePath tablePath)
+            throws CatalogException, TableNotExistException {
         return null;
     }
 
     @Override
     public void createTable(TablePath tablePath, CatalogTable table, boolean ignoreIfExists)
-            throws TableAlreadyExistException, DatabaseNotExistException, CatalogException {
-
-    }
+            throws TableAlreadyExistException, DatabaseNotExistException, CatalogException {}
 
     @Override
     public void dropTable(TablePath tablePath, boolean ignoreIfNotExists)
-            throws TableNotExistException, CatalogException {
-
-    }
+            throws TableNotExistException, CatalogException {}
 
     @Override
     public void createDatabase(TablePath tablePath, boolean ignoreIfExists)
-            throws DatabaseAlreadyExistException, CatalogException {
-
-    }
+            throws DatabaseAlreadyExistException, CatalogException {}
 
     @Override
     public void dropDatabase(TablePath tablePath, boolean ignoreIfNotExists)
-            throws DatabaseNotExistException, CatalogException {
-
-    }
+            throws DatabaseNotExistException, CatalogException {}
 }

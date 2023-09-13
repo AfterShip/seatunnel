@@ -8,7 +8,6 @@ import org.apache.seatunnel.common.exception.SeaTunnelErrorCode;
  * @date: 2023/9/6 16:44
  */
 public enum SpannerConnectorErrorCode implements SeaTunnelErrorCode {
-
     SPANNER_CONNECTOR_ERROR("SPANNER-01", "Failed to create spanner service.");
 
     private final String code;

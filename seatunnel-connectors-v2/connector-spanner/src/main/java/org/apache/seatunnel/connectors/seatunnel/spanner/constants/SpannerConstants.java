@@ -8,5 +8,4 @@ package org.apache.seatunnel.connectors.seatunnel.spanner.constants;
 public final class SpannerConstants {
 
     public static final String IDENTIFIER = "Spanner";
-
 }

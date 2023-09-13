@@ -1,12 +1,16 @@
 package org.apache.seatunnel.connectors.seatunnel.bigtable.sink;
 
-import com.google.auto.service.AutoService;
-import com.google.common.collect.ImmutableSet;
+import org.apache.seatunnel.shade.com.typesafe.config.Config;
+
 import org.apache.seatunnel.api.common.PrepareFailException;
 import org.apache.seatunnel.api.common.SeaTunnelAPIErrorCode;
 import org.apache.seatunnel.api.sink.SeaTunnelSink;
 import org.apache.seatunnel.api.sink.SinkWriter;
-import org.apache.seatunnel.api.table.type.*;
+import org.apache.seatunnel.api.table.type.BasicType;
+import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
+import org.apache.seatunnel.api.table.type.SeaTunnelRow;
+import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
+import org.apache.seatunnel.api.table.type.SqlType;
 import org.apache.seatunnel.common.config.CheckConfigUtil;
 import org.apache.seatunnel.common.config.CheckResult;
 import org.apache.seatunnel.common.constants.PluginType;
@@ -14,13 +18,31 @@ import org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableParamet
 import org.apache.seatunnel.connectors.seatunnel.bigtable.exception.BigtableConnectorException;
 import org.apache.seatunnel.connectors.seatunnel.common.sink.AbstractSimpleSink;
 import org.apache.seatunnel.connectors.seatunnel.common.sink.AbstractSinkWriter;
-import org.apache.seatunnel.shade.com.typesafe.config.Config;
+
+import com.google.auto.service.AutoService;
+import com.google.common.collect.ImmutableSet;
 
 import java.io.IOException;
 import java.util.Set;
 
-import static org.apache.seatunnel.api.table.type.SqlType.*;
-import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.*;
+import static org.apache.seatunnel.api.table.type.SqlType.BIGINT;
+import static org.apache.seatunnel.api.table.type.SqlType.BOOLEAN;
+import static org.apache.seatunnel.api.table.type.SqlType.BYTES;
+import static org.apache.seatunnel.api.table.type.SqlType.DOUBLE;
+import static org.apache.seatunnel.api.table.type.SqlType.FLOAT;
+import static org.apache.seatunnel.api.table.type.SqlType.INT;
+import static org.apache.seatunnel.api.table.type.SqlType.SMALLINT;
+import static org.apache.seatunnel.api.table.type.SqlType.STRING;
+import static org.apache.seatunnel.api.table.type.SqlType.TINYINT;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.COLUMN_MAPPINGS;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.CONFIG_CENTER_ENVIRONMENT;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.CONFIG_CENTER_PROJECT;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.CONFIG_CENTER_TOKEN;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.CONFIG_CENTER_URL;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.INSTANCE_ID;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.KEY_ALIAS;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.PROJECT_ID;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.TABLE_ID;
 
 /**
  * @author: gf.xu
@@ -30,17 +52,8 @@ import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.Bigtable
 @AutoService(SeaTunnelSink.class)
 public class BigtableSink extends AbstractSimpleSink<SeaTunnelRow, Void> {
 
-    private static final Set<SqlType> SUPPORTED_FIELD_TYPES = ImmutableSet.of(
-            BOOLEAN,
-            TINYINT,
-            SMALLINT,
-            INT,
-            BIGINT,
-            FLOAT,
-            DOUBLE,
-            STRING,
-            BYTES
-    );
+    private static final Set<SqlType> SUPPORTED_FIELD_TYPES =
+            ImmutableSet.of(BOOLEAN, TINYINT, SMALLINT, INT, BIGINT, FLOAT, DOUBLE, STRING, BYTES);
 
     private SeaTunnelRowType seaTunnelRowType;
 
@@ -86,12 +99,18 @@ public class BigtableSink extends AbstractSimpleSink<SeaTunnelRow, Void> {
         for (int i = 0; i < seaTunnelRowType.getTotalFields(); i++) {
             String fieldName = seaTunnelRowType.getFieldName(i);
             SeaTunnelDataType<?> dataType = seaTunnelRowType.getFieldType(i);
-            if (!(dataType instanceof BasicType) || !SUPPORTED_FIELD_TYPES.contains(dataType.getSqlType())) {
+            if (!(dataType instanceof BasicType)
+                    || !SUPPORTED_FIELD_TYPES.contains(dataType.getSqlType())) {
                 throw new BigtableConnectorException(
                         SeaTunnelAPIErrorCode.CONFIG_VALIDATION_FAILED,
-                        String.format("PluginName: %s, PluginType: %s, Message: %s",
-                                getPluginName(), PluginType.SINK,
-                                "Unsupported field type: " + dataType.getSqlType() + " for field: " + fieldName));
+                        String.format(
+                                "PluginName: %s, PluginType: %s, Message: %s",
+                                getPluginName(),
+                                PluginType.SINK,
+                                "Unsupported field type: "
+                                        + dataType.getSqlType()
+                                        + " for field: "
+                                        + fieldName));
             }
         }
     }
@@ -102,7 +121,8 @@ public class BigtableSink extends AbstractSimpleSink<SeaTunnelRow, Void> {
     }
 
     @Override
-    public AbstractSinkWriter<SeaTunnelRow, Void> createWriter(SinkWriter.Context context) throws IOException {
+    public AbstractSinkWriter<SeaTunnelRow, Void> createWriter(SinkWriter.Context context)
+            throws IOException {
         return new BigtableSinkWriter(seaTunnelRowType, bigtableParameters, rowkeyColumnIndex);
     }
 }

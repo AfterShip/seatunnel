@@ -29,11 +29,13 @@ public class HBaseColumn implements Serializable {
      *
      * @param fullName full name
      * @return hbase column with family and qualifier
-     * @throws IllegalArgumentException if provided full name does not comply with 'family:qualifier' format
+     * @throws IllegalArgumentException if provided full name does not comply with
+     *     'family:qualifier' format
      */
     public static HBaseColumn fromFullName(String fullName) {
         if (!fullName.contains(FAMILY_QUALIFIER_DELIMITER)) {
-            throw new IllegalArgumentException("Wrong name format. Expected format is 'family:qualifier'");
+            throw new IllegalArgumentException(
+                    "Wrong name format. Expected format is 'family:qualifier'");
         }
         int delimiterIndex = fullName.indexOf(FAMILY_QUALIFIER_DELIMITER);
         String family = fullName.substring(0, delimiterIndex);

@@ -2,6 +2,7 @@ package org.apache.seatunnel.connectors.seatunnel.spanner;
 
 import org.apache.seatunnel.connectors.seatunnel.spanner.sink.SpannerSinkFactory;
 import org.apache.seatunnel.connectors.seatunnel.spanner.source.SpannerSourceFactory;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -17,5 +18,4 @@ public class SpannerFactoryTest {
         Assertions.assertNotNull((new SpannerSourceFactory()).optionRule());
         Assertions.assertNotNull((new SpannerSinkFactory()).optionRule());
     }
-
 }

@@ -1,21 +1,36 @@
 package org.apache.seatunnel.connectors.seatunnel.bigtable.config;
 
-import com.google.common.base.Strings;
-import lombok.Builder;
-import lombok.Getter;
+import org.apache.seatunnel.shade.com.typesafe.config.Config;
+
 import org.apache.seatunnel.api.common.SeaTunnelAPIErrorCode;
 import org.apache.seatunnel.common.constants.PluginType;
 import org.apache.seatunnel.connectors.seatunnel.bigtable.common.HBaseColumn;
 import org.apache.seatunnel.connectors.seatunnel.bigtable.exception.BigtableConnectorException;
 import org.apache.seatunnel.connectors.seatunnel.bigtable.sink.BigtableTableSinkFactory;
-import org.apache.seatunnel.shade.com.typesafe.config.Config;
+
+import com.google.common.base.Strings;
+import lombok.Builder;
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.*;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.BIGTABLE_OPTIONS;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.COLUMN_MAPPINGS;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.CONFIG_CENTER_ENVIRONMENT;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.CONFIG_CENTER_PROJECT;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.CONFIG_CENTER_TOKEN;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.CONFIG_CENTER_URL;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.ENCODING;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.EnCoding;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.INSTANCE_ID;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.KEY_ALIAS;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.PROJECT_ID;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.SINK_BUFFER_FLUSH_MAX_MUTATIONS;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.SINK_BUFFER_FLUSH_MAX_SIZE_IN_BYTES;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.TABLE_ID;
 
 /**
  * @author: gf.xu
@@ -54,8 +69,7 @@ public class BigtableParameters implements Serializable {
     @Builder.Default
     private int bufferFlushMaxMutations = SINK_BUFFER_FLUSH_MAX_MUTATIONS.defaultValue();
 
-    @Builder.Default
-    private EnCoding enCoding = ENCODING.defaultValue();
+    @Builder.Default private EnCoding enCoding = ENCODING.defaultValue();
 
     public static BigtableParameters buildWithConfig(Config pluginConfig) {
         BigtableParametersBuilder builder = BigtableParameters.builder();
@@ -101,19 +115,23 @@ public class BigtableParameters implements Serializable {
 
         // sink_buffer_flush_max_size_in_bytes
         if (pluginConfig.hasPath(SINK_BUFFER_FLUSH_MAX_SIZE_IN_BYTES.key())) {
-            builder.bufferFlushMaxSizeInBytes(pluginConfig.getInt(SINK_BUFFER_FLUSH_MAX_SIZE_IN_BYTES.key()));
+            builder.bufferFlushMaxSizeInBytes(
+                    pluginConfig.getInt(SINK_BUFFER_FLUSH_MAX_SIZE_IN_BYTES.key()));
         }
 
         // sink_buffer_flush_max_mutations
         if (pluginConfig.hasPath(SINK_BUFFER_FLUSH_MAX_MUTATIONS.key())) {
-            builder.bufferFlushMaxMutations(pluginConfig.getInt(SINK_BUFFER_FLUSH_MAX_MUTATIONS.key()));
+            builder.bufferFlushMaxMutations(
+                    pluginConfig.getInt(SINK_BUFFER_FLUSH_MAX_MUTATIONS.key()));
         }
         return builder.build();
     }
 
     public static Map<String, HBaseColumn> getColumnMappings(String columnMappings) {
-        Map<String, String> specifiedMappings = Strings.isNullOrEmpty(columnMappings) ?
-                Collections.emptyMap() : parseKeyValueConfig(columnMappings, ",", "=");
+        Map<String, String> specifiedMappings =
+                Strings.isNullOrEmpty(columnMappings)
+                        ? Collections.emptyMap()
+                        : parseKeyValueConfig(columnMappings, ",", "=");
         Map<String, HBaseColumn> mappings = new HashMap<>(specifiedMappings.size());
 
         for (Map.Entry<String, String> entry : specifiedMappings.entrySet()) {
@@ -122,20 +140,24 @@ public class BigtableParameters implements Serializable {
                 HBaseColumn column = HBaseColumn.fromFullName(entry.getValue());
                 mappings.put(field, column);
             } catch (IllegalArgumentException e) {
-                String errorMessage = String.format("Invalid column in mapping '%s'. Reason: %s",
-                        entry.getKey(), e.getMessage());
+                String errorMessage =
+                        String.format(
+                                "Invalid column in mapping '%s'. Reason: %s",
+                                entry.getKey(), e.getMessage());
                 throw new BigtableConnectorException(
                         SeaTunnelAPIErrorCode.CONFIG_VALIDATION_FAILED,
                         String.format(
-                                "PluginName: %s, PluginType: %s, Message: %s", BigtableTableSinkFactory.IDENTIFIER
-                                , PluginType.SINK, errorMessage));
+                                "PluginName: %s, PluginType: %s, Message: %s",
+                                BigtableTableSinkFactory.IDENTIFIER,
+                                PluginType.SINK,
+                                errorMessage));
             }
         }
         return mappings;
     }
 
-    public static Map<String, String> parseKeyValueConfig(String configValue, String delimiter,
-                                                          String keyValueDelimiter) {
+    public static Map<String, String> parseKeyValueConfig(
+            String configValue, String delimiter, String keyValueDelimiter) {
         Map<String, String> map = new HashMap<>();
         for (String property : configValue.split(delimiter)) {
             String[] parts = property.split(keyValueDelimiter);

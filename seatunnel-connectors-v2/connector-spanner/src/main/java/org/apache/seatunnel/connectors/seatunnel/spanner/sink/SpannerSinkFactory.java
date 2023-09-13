@@ -1,11 +1,20 @@
 package org.apache.seatunnel.connectors.seatunnel.spanner.sink;
 
-import com.google.auto.service.AutoService;
 import org.apache.seatunnel.api.configuration.util.OptionRule;
 import org.apache.seatunnel.api.table.factory.Factory;
 import org.apache.seatunnel.api.table.factory.TableSinkFactory;
 
-import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.*;
+import com.google.auto.service.AutoService;
+
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.BATCH_SIZE;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.CONFIG_CENTER_ENVIRONMENT;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.CONFIG_CENTER_PROJECT;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.CONFIG_CENTER_TOKEN;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.CONFIG_CENTER_URL;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.DATABASE_ID;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.INSTANCE_ID;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.PROJECT_ID;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.TABLE_ID;
 import static org.apache.seatunnel.connectors.seatunnel.spanner.constants.SpannerConstants.IDENTIFIER;
 
 /**
@@ -15,7 +24,6 @@ import static org.apache.seatunnel.connectors.seatunnel.spanner.constants.Spanne
  */
 @AutoService(Factory.class)
 public class SpannerSinkFactory implements TableSinkFactory {
-
 
     @Override
     public String factoryIdentifier() {
@@ -34,8 +42,7 @@ public class SpannerSinkFactory implements TableSinkFactory {
                         CONFIG_CENTER_TOKEN,
                         CONFIG_CENTER_URL,
                         CONFIG_CENTER_ENVIRONMENT)
-                .optional(
-                        BATCH_SIZE)
+                .optional(BATCH_SIZE)
                 .build();
     }
 }

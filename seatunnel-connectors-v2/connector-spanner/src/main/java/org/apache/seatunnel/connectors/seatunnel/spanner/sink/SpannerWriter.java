@@ -1,15 +1,25 @@
 package org.apache.seatunnel.connectors.seatunnel.spanner.sink;
 
-import com.google.cloud.ByteArray;
-import com.google.cloud.Date;
-import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.*;
 import org.apache.seatunnel.api.sink.SinkWriter;
-import org.apache.seatunnel.api.table.type.*;
+import org.apache.seatunnel.api.table.type.ArrayType;
+import org.apache.seatunnel.api.table.type.DecimalType;
+import org.apache.seatunnel.api.table.type.LocalTimeType;
+import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
+import org.apache.seatunnel.api.table.type.SeaTunnelRow;
+import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.connectors.seatunnel.common.sink.AbstractSinkWriter;
 import org.apache.seatunnel.connectors.seatunnel.spanner.common.BytesCounter;
 import org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerParameters;
 import org.apache.seatunnel.connectors.seatunnel.spanner.utils.SpannerUtil;
+
+import com.google.cloud.ByteArray;
+import com.google.cloud.Date;
+import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.Value;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -23,7 +33,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.apache.seatunnel.connectors.seatunnel.spanner.common.SourceSinkCounter.BYTES_WRITTEN;
-
 
 /**
  * @author: gf.xu
@@ -51,15 +60,19 @@ public class SpannerWriter extends AbstractSinkWriter<SeaTunnelRow, Void> {
     public SpannerWriter(
             SinkWriter.Context context,
             SpannerParameters parameters,
-            SeaTunnelRowType seaTunnelRowType) throws IOException {
+            SeaTunnelRowType seaTunnelRowType)
+            throws IOException {
         String projectId = parameters.getProjectId();
         String instanceId = parameters.getInstanceId();
         String databaseId = parameters.getDatabaseId();
         String serviceAccount = SpannerUtil.getServiceAccount(parameters);
         this.context = context;
         this.counter = new BytesCounter();
-        this.spanner = SpannerUtil.getSpannerServiceWithReadInterceptor(serviceAccount, projectId, counter);
-        this.databaseClient = spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
+        this.spanner =
+                SpannerUtil.getSpannerServiceWithReadInterceptor(
+                        serviceAccount, projectId, counter);
+        this.databaseClient =
+                spanner.getDatabaseClient(DatabaseId.of(projectId, instanceId, databaseId));
         this.batchSize = parameters.getBatchSize();
         this.parameters = parameters;
         this.seaTunnelRowType = seaTunnelRowType;
@@ -87,21 +100,25 @@ public class SpannerWriter extends AbstractSinkWriter<SeaTunnelRow, Void> {
             switch (type.getSqlType()) {
                 case DATE:
                     LocalDate localDate = (LocalDate) value;
-                    Date spannerDate = Date.fromYearMonthDay(
-                            localDate.getYear(),
-                            localDate.getMonthValue(),
-                            localDate.getDayOfMonth());
+                    Date spannerDate =
+                            Date.fromYearMonthDay(
+                                    localDate.getYear(),
+                                    localDate.getMonthValue(),
+                                    localDate.getDayOfMonth());
                     return Value.date(spannerDate);
-                // NOT SUPPORT TIME
+                    // NOT SUPPORT TIME
                 case TIMESTAMP:
                     LocalDateTime localDateTime = (LocalDateTime) value;
-                    Timestamp spannerTs = Timestamp.ofTimeSecondsAndNanos(
-                            localDateTime.toEpochSecond(ZoneOffset.UTC),
-                            localDateTime.getNano());
+                    Timestamp spannerTs =
+                            Timestamp.ofTimeSecondsAndNanos(
+                                    localDateTime.toEpochSecond(ZoneOffset.UTC),
+                                    localDateTime.getNano());
                     return Value.timestamp(spannerTs);
                 default:
                     throw new IllegalStateException(
-                            String.format("Field '%s' is of unsupported logical type '%s'", name, type.getSqlType()));
+                            String.format(
+                                    "Field '%s' is of unsupported logical type '%s'",
+                                    name, type.getSqlType()));
             }
         } else if (type instanceof DecimalType) {
             // decimal java.math.BigDecimal -> spanner NUMERIC
@@ -159,7 +176,9 @@ public class SpannerWriter extends AbstractSinkWriter<SeaTunnelRow, Void> {
                     }
                 default:
                     throw new IllegalStateException(
-                            String.format("Field '%s' is of unsupported logical type '%s'", type, type.getSqlType()));
+                            String.format(
+                                    "Field '%s' is of unsupported logical type '%s'",
+                                    type, type.getSqlType()));
             }
         }
     }
@@ -167,13 +186,16 @@ public class SpannerWriter extends AbstractSinkWriter<SeaTunnelRow, Void> {
     private Value transformCollectionToValue(String name, ArrayType arrayType, Object object) {
         if (!(object instanceof Object[])) {
             throw new IllegalStateException(
-                    String.format("Field '%s' is an array of '%s', which is not supported.", name, object.getClass()));
+                    String.format(
+                            "Field '%s' is an array of '%s', which is not supported.",
+                            name, object.getClass()));
         }
         SeaTunnelDataType elementType = arrayType.getElementType();
         Object[] fields = (Object[]) object;
-        List<Value> values = Arrays.stream(fields)
-                .map(value -> convertToValue(name, elementType, value))
-                .collect(Collectors.toList());
+        List<Value> values =
+                Arrays.stream(fields)
+                        .map(value -> convertToValue(name, elementType, value))
+                        .collect(Collectors.toList());
 
         switch (elementType.getSqlType()) {
             case BOOLEAN:
@@ -223,7 +245,8 @@ public class SpannerWriter extends AbstractSinkWriter<SeaTunnelRow, Void> {
                                 .collect(Collectors.toList()));
             default:
                 throw new IllegalStateException(
-                        String.format("Field '%s' is an array of '%s', which is not supported.",
+                        String.format(
+                                "Field '%s' is an array of '%s', which is not supported.",
                                 name, elementType.getSqlType()));
         }
     }
@@ -233,7 +256,9 @@ public class SpannerWriter extends AbstractSinkWriter<SeaTunnelRow, Void> {
         try {
             if (mutations.size() > 0) {
                 databaseClient.write(mutations);
-                context.getMetricsContext().counter(BYTES_WRITTEN.counterName()).inc(counter.getValue());
+                context.getMetricsContext()
+                        .counter(BYTES_WRITTEN.counterName())
+                        .inc(counter.getValue());
                 mutations.clear();
             }
         } finally {

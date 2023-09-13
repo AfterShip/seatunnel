@@ -1,7 +1,8 @@
 package org.apache.seatunnel.connectors.seatunnel.spanner.serialization;
 
-import com.google.cloud.spanner.ResultSet;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
+
+import com.google.cloud.spanner.ResultSet;
 
 /**
  * @author: gf.xu
@@ -11,5 +12,4 @@ import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 public interface SeaTunnelRowDeserializer {
 
     SeaTunnelRow deserialize(ResultSet resultSet);
-
 }

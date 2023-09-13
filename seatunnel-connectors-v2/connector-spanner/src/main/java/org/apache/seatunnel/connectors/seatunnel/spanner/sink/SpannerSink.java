@@ -1,7 +1,7 @@
 package org.apache.seatunnel.connectors.seatunnel.spanner.sink;
 
-import com.google.auto.service.AutoService;
-import com.google.common.collect.ImmutableSet;
+import org.apache.seatunnel.shade.com.typesafe.config.Config;
+
 import org.apache.seatunnel.api.common.PrepareFailException;
 import org.apache.seatunnel.api.common.SeaTunnelAPIErrorCode;
 import org.apache.seatunnel.api.sink.SeaTunnelSink;
@@ -18,14 +18,33 @@ import org.apache.seatunnel.connectors.seatunnel.common.sink.AbstractSinkWriter;
 import org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerParameters;
 import org.apache.seatunnel.connectors.seatunnel.spanner.constants.SpannerConstants;
 import org.apache.seatunnel.connectors.seatunnel.spanner.exception.SpannerConnectorException;
-import org.apache.seatunnel.shade.com.typesafe.config.Config;
+
+import com.google.auto.service.AutoService;
+import com.google.common.collect.ImmutableSet;
 
 import java.io.IOException;
 import java.util.Set;
 
-import static org.apache.seatunnel.api.table.type.SqlType.*;
-import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.*;
-import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.*;
+import static org.apache.seatunnel.api.table.type.SqlType.ARRAY;
+import static org.apache.seatunnel.api.table.type.SqlType.BIGINT;
+import static org.apache.seatunnel.api.table.type.SqlType.BOOLEAN;
+import static org.apache.seatunnel.api.table.type.SqlType.BYTES;
+import static org.apache.seatunnel.api.table.type.SqlType.DATE;
+import static org.apache.seatunnel.api.table.type.SqlType.DECIMAL;
+import static org.apache.seatunnel.api.table.type.SqlType.DOUBLE;
+import static org.apache.seatunnel.api.table.type.SqlType.FLOAT;
+import static org.apache.seatunnel.api.table.type.SqlType.INT;
+import static org.apache.seatunnel.api.table.type.SqlType.SMALLINT;
+import static org.apache.seatunnel.api.table.type.SqlType.STRING;
+import static org.apache.seatunnel.api.table.type.SqlType.TIMESTAMP;
+import static org.apache.seatunnel.api.table.type.SqlType.TINYINT;
+import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_ENVIRONMENT;
+import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_PROJECT;
+import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_TOKEN;
+import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_URL;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.INSTANCE_ID;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.PROJECT_ID;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.TABLE_ID;
 
 /**
  * @author: gf.xu
@@ -35,21 +54,10 @@ import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerCo
 @AutoService(SeaTunnelSink.class)
 public class SpannerSink extends AbstractSimpleSink<SeaTunnelRow, Void> {
 
-    private static final Set<SqlType> SUPPORTED_FIELD_TYPES = ImmutableSet.of(
-            BOOLEAN,
-            STRING,
-            TINYINT,
-            SMALLINT,
-            INT,
-            BIGINT,
-            FLOAT,
-            DOUBLE,
-            BYTES,
-            DATE,
-            TIMESTAMP,
-            DECIMAL,
-            ARRAY
-    );
+    private static final Set<SqlType> SUPPORTED_FIELD_TYPES =
+            ImmutableSet.of(
+                    BOOLEAN, STRING, TINYINT, SMALLINT, INT, BIGINT, FLOAT, DOUBLE, BYTES, DATE,
+                    TIMESTAMP, DECIMAL, ARRAY);
 
     private SeaTunnelRowType seaTunnelRowType;
 
@@ -92,9 +100,14 @@ public class SpannerSink extends AbstractSimpleSink<SeaTunnelRow, Void> {
             if (!SUPPORTED_FIELD_TYPES.contains(dataType.getSqlType())) {
                 throw new SpannerConnectorException(
                         SeaTunnelAPIErrorCode.CONFIG_VALIDATION_FAILED,
-                        String.format("PluginName: %s, PluginType: %s, Message: %s",
-                                getPluginName(), PluginType.SINK,
-                                "Unsupported field type: " + dataType.getSqlType() + " for field: " + fieldName));
+                        String.format(
+                                "PluginName: %s, PluginType: %s, Message: %s",
+                                getPluginName(),
+                                PluginType.SINK,
+                                "Unsupported field type: "
+                                        + dataType.getSqlType()
+                                        + " for field: "
+                                        + fieldName));
             }
         }
     }
@@ -105,7 +118,8 @@ public class SpannerSink extends AbstractSimpleSink<SeaTunnelRow, Void> {
     }
 
     @Override
-    public AbstractSinkWriter<SeaTunnelRow, Void> createWriter(SinkWriter.Context context) throws IOException {
+    public AbstractSinkWriter<SeaTunnelRow, Void> createWriter(SinkWriter.Context context)
+            throws IOException {
         return new SpannerWriter(context, parameters, seaTunnelRowType);
     }
 }
