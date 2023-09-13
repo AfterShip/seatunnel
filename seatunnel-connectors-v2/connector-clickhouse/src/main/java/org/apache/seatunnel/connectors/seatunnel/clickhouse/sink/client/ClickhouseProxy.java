@@ -25,6 +25,11 @@ import org.apache.seatunnel.connectors.seatunnel.clickhouse.shard.Shard;
 import org.apache.seatunnel.connectors.seatunnel.clickhouse.sink.DistributedEngine;
 import org.apache.seatunnel.connectors.seatunnel.clickhouse.sink.file.ClickhouseTable;
 
+import org.apache.commons.lang3.StringUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.clickhouse.client.ClickHouseClient;
 import com.clickhouse.client.ClickHouseException;
 import com.clickhouse.client.ClickHouseFormat;
@@ -43,6 +48,8 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("magicnumber")
 public class ClickhouseProxy {
+
+    private static final Logger logger = LoggerFactory.getLogger(ClickhouseProxy.class);
 
     private final ClickHouseRequest<?> clickhouseRequest;
     private final ClickHouseClient client;
@@ -133,9 +140,23 @@ public class ClickhouseProxy {
         return getClickhouseTableSchema(request, table);
     }
 
+    public Map<String, String> getClickhouseTableSchema(String database, String table) {
+        ClickHouseRequest<?> request = getClickhouseConnection();
+        return getClickhouseTableSchema(request, database, table);
+    }
+
     public Map<String, String> getClickhouseTableSchema(
             ClickHouseRequest<?> request, String table) {
-        String sql = "desc " + table;
+        return getClickhouseTableSchema(request, null, table);
+    }
+
+    public Map<String, String> getClickhouseTableSchema(
+            ClickHouseRequest<?> request, String database, String table) {
+        String sql = String.format("desc %s", table);
+        if (StringUtils.isNotBlank(database)) {
+            sql = String.format("desc %s.%s", database, table);
+        }
+        logger.info("execute sql: " + sql);
         Map<String, String> schema = new LinkedHashMap<>();
         try (ClickHouseResponse response = request.query(sql).executeAndWait()) {
             response.records()
@@ -239,10 +260,20 @@ public class ClickhouseProxy {
                     engineFull,
                     dataPaths,
                     sortingKey,
-                    getClickhouseTableSchema(clickhouseRequest, table));
+                    getClickhouseTableSchema(clickhouseRequest, database, table));
         } catch (ClickHouseException e) {
             throw new ClickhouseConnectorException(
                     SeaTunnelAPIErrorCode.TABLE_NOT_EXISTED, "Cannot get clickhouse table", e);
+        }
+    }
+
+    public void executeSql(String sql) {
+        logger.info("execute sql: " + sql);
+        try (ClickHouseResponse response = clickhouseRequest.query(sql).executeAndWait()) {
+            // do nothing
+        } catch (ClickHouseException e) {
+            throw new ClickhouseConnectorException(
+                    ClickhouseConnectorErrorCode.SQL_EXECUTE_FAILED, "Cannot execute sql", e);
         }
     }
 

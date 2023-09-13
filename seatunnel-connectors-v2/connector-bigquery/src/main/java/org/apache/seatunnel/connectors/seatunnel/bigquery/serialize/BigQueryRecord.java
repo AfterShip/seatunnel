@@ -1,8 +1,9 @@
 package org.apache.seatunnel.connectors.seatunnel.bigquery.serialize;
 
+import org.apache.avro.generic.GenericData;
+
 import lombok.Getter;
 import lombok.ToString;
-import org.apache.avro.generic.GenericData;
 
 /**
  * @author ah.he@aftership.com
@@ -15,7 +16,7 @@ public class BigQueryRecord {
 
     private GenericData.Record record;
 
-    public BigQueryRecord(GenericData.Record record){
+    public BigQueryRecord(GenericData.Record record) {
         this.record = record;
     }
 }

@@ -89,7 +89,11 @@ public class SparkDataWriter<CommitInfoT, StateT> implements DataWriter<Internal
         sinkWriter.close();
 
         // Reports recordsWritten to the Spark output metrics.
-        Optional.of(TaskContext.get()).get().taskMetrics().outputMetrics().setRecordsWritten(recordsWritten.value());
+        Optional.of(TaskContext.get())
+                .get()
+                .taskMetrics()
+                .outputMetrics()
+                .setRecordsWritten(recordsWritten.value());
         return sparkWriterCommitMessage;
     }
 
