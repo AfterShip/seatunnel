@@ -1,7 +1,5 @@
 package org.apache.seatunnel.connectors.seatunnel.spanner.source;
 
-import com.google.cloud.spanner.*;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.seatunnel.api.common.metrics.Counter;
 import org.apache.seatunnel.api.source.Collector;
 import org.apache.seatunnel.api.source.SourceReader;
@@ -13,8 +11,20 @@ import org.apache.seatunnel.connectors.seatunnel.spanner.serialization.DefaultSe
 import org.apache.seatunnel.connectors.seatunnel.spanner.serialization.SeaTunnelRowDeserializer;
 import org.apache.seatunnel.connectors.seatunnel.spanner.utils.SpannerUtil;
 
+import com.google.cloud.spanner.BatchClient;
+import com.google.cloud.spanner.BatchReadOnlyTransaction;
+import com.google.cloud.spanner.BatchTransactionId;
+import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Partition;
+import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Spanner;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.apache.seatunnel.connectors.seatunnel.spanner.common.SourceSinkCounter.BYTES_READ;
 
@@ -47,9 +57,7 @@ public class SpannerSourceReader implements SourceReader<SeaTunnelRow, SpannerSo
     private Deque<SpannerSourceSplit> splits = new LinkedList<>();
 
     public SpannerSourceReader(
-            SeaTunnelRowType rowTypeInfo,
-            SpannerParameters spannerParameters,
-            Context context) {
+            SeaTunnelRowType rowTypeInfo, SpannerParameters spannerParameters, Context context) {
         this.rowTypeInfo = rowTypeInfo;
         this.spannerParameters = spannerParameters;
         this.context = context;
@@ -63,8 +71,9 @@ public class SpannerSourceReader implements SourceReader<SeaTunnelRow, SpannerSo
 
         // create a spanner
         String serviceAccount = SpannerUtil.getServiceAccount(spannerParameters);
-        spanner = SpannerUtil.getSpannerServiceWithReadInterceptor(
-                serviceAccount, spannerParameters.getProjectId(), counter);
+        spanner =
+                SpannerUtil.getSpannerServiceWithReadInterceptor(
+                        serviceAccount, spannerParameters.getProjectId(), counter);
     }
 
     @Override
@@ -74,10 +83,14 @@ public class SpannerSourceReader implements SourceReader<SeaTunnelRow, SpannerSo
             if (split != null) {
                 BatchTransactionId batchTransactionId = split.getTransactionId();
                 Partition partition = split.getPartition();
-                BatchClient batchClient = spanner.getBatchClient(
-                        DatabaseId.of(spannerParameters.getProjectId(),
-                                spannerParameters.getInstanceId(), spannerParameters.getDatabaseId()));
-                BatchReadOnlyTransaction transaction = batchClient.batchReadOnlyTransaction(batchTransactionId);
+                BatchClient batchClient =
+                        spanner.getBatchClient(
+                                DatabaseId.of(
+                                        spannerParameters.getProjectId(),
+                                        spannerParameters.getInstanceId(),
+                                        spannerParameters.getDatabaseId()));
+                BatchReadOnlyTransaction transaction =
+                        batchClient.batchReadOnlyTransaction(batchTransactionId);
                 ResultSet resultSet = transaction.execute(partition);
                 outputFromResultSet(resultSet, output);
             } else if (noMoreSplit) {

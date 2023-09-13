@@ -28,7 +28,6 @@ import org.apache.seatunnel.common.utils.RetryUtils;
 import org.apache.seatunnel.common.utils.RetryUtils.RetryMaterial;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.client.EsRestClient;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.dto.BulkResponse;
-import org.apache.seatunnel.connectors.seatunnel.elasticsearch.dto.IndexInfo;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.exception.ElasticsearchConnectorErrorCode;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.exception.ElasticsearchConnectorException;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.serialize.ElasticsearchRowSerializer;
@@ -52,30 +51,30 @@ public class ElasticsearchSinkWriter
 
     private final SinkWriter.Context context;
 
-    private final int maxBatchSize;
+    private final int maxBatchNumber;
+    private final int maxBatchSizeMb;
 
     private final SeaTunnelRowSerializer seaTunnelRowSerializer;
     private final List<String> requestEsList;
     private EsRestClient esRestClient;
     private RetryMaterial retryMaterial;
     private static final long DEFAULT_SLEEP_TIME_MS = 200L;
+    private long bytesCount = 0;
 
     public ElasticsearchSinkWriter(
             SinkWriter.Context context,
             SeaTunnelRowType seaTunnelRowType,
             Config pluginConfig,
-            int maxBatchSize,
+            int maxBatchNumber,
+            int maxBatchSizeMb,
             int maxRetryCount) {
         this.context = context;
-        this.maxBatchSize = maxBatchSize;
-
-        IndexInfo indexInfo = new IndexInfo(pluginConfig);
+        this.maxBatchNumber = maxBatchNumber;
+        this.maxBatchSizeMb = maxBatchSizeMb;
         esRestClient = EsRestClient.createInstance(pluginConfig);
         this.seaTunnelRowSerializer =
-                new ElasticsearchRowSerializer(
-                        esRestClient.getClusterInfo(), indexInfo, seaTunnelRowType);
-
-        this.requestEsList = new ArrayList<>(maxBatchSize);
+                new ElasticsearchRowSerializer(pluginConfig, seaTunnelRowType);
+        this.requestEsList = new ArrayList<>(maxBatchNumber);
         this.retryMaterial =
                 new RetryMaterial(maxRetryCount, true, exception -> true, DEFAULT_SLEEP_TIME_MS);
     }
@@ -85,10 +84,12 @@ public class ElasticsearchSinkWriter
         if (RowKind.UPDATE_BEFORE.equals(element.getRowKind())) {
             return;
         }
-
         String indexRequestRow = seaTunnelRowSerializer.serializeRow(element);
         requestEsList.add(indexRequestRow);
-        if (requestEsList.size() >= maxBatchSize) {
+        bytesCount += indexRequestRow.getBytes().length;
+        ;
+        if (requestEsList.size() >= maxBatchNumber
+                || bytesCount >= (long) maxBatchSizeMb * 1024 * 1024) {
             bulkEsWithRetry(this.esRestClient, this.requestEsList);
         }
     }
@@ -107,7 +108,7 @@ public class ElasticsearchSinkWriter
         try {
             RetryUtils.retryWithException(
                     () -> {
-                        if (requestEsList.size() > 0) {
+                        if (!requestEsList.isEmpty()) {
                             String requestBody = String.join("\n", requestEsList) + "\n";
                             BulkResponse bulkResponse = esRestClient.bulk(requestBody);
                             if (bulkResponse.isErrors()) {
@@ -115,6 +116,7 @@ public class ElasticsearchSinkWriter
                                         ElasticsearchConnectorErrorCode.BULK_RESPONSE_ERROR,
                                         "bulk es error: " + bulkResponse.getResponse());
                             }
+                            bytesCount = 0;
                             return bulkResponse;
                         }
                         return null;

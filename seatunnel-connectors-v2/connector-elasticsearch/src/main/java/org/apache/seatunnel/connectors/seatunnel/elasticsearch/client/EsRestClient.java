@@ -24,16 +24,19 @@ import org.apache.seatunnel.shade.com.fasterxml.jackson.databind.node.TextNode;
 import org.apache.seatunnel.shade.com.typesafe.config.Config;
 
 import org.apache.seatunnel.common.utils.JsonUtils;
-import org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.EsClusterConnectionConfig;
+import org.apache.seatunnel.connectors.seatunnel.common.utils.ConfigCenterUtils;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.dto.BulkResponse;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.dto.ElasticsearchClusterInfo;
+import org.apache.seatunnel.connectors.seatunnel.elasticsearch.dto.ProxyContext;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.dto.source.IndexDocsCount;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.dto.source.ScrollResult;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.exception.ElasticsearchConnectorErrorCode;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.exception.ElasticsearchConnectorException;
+import org.apache.seatunnel.connectors.seatunnel.elasticsearch.util.RandomStringUtil;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.util.SSLUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
@@ -53,10 +56,26 @@ import org.elasticsearch.client.RestClientBuilder;
 
 import lombok.extern.slf4j.Slf4j;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.KeyFactory;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.SecureRandom;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -64,6 +83,25 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CA_CLIENT_CRT;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CA_CLIENT_KEY;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CA_CLIENT_ROOT_CRT;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONFIG_CENTER_PROJECT;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONFIG_CENTER_TOKEN;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONFIG_CENTER_URL;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONNECT_REQUEST_TIMEOUT;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONNECT_TIMEOUT_MILLIS;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.ENVIRONMENT;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.ES_CLUSTER;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.KEY_STORE_PASSWORD;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.MAX_CONN_PER_ROUTE;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.MAX_CONN_TOTAL;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.NEW_CA_CLIENT_CRT;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.NEW_CA_CLIENT_KEY;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.NEW_CA_CLIENT_ROOT_CRT;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.PROXY_JSON;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.SOCKET_TIMEOUT_MILLIS;
 
 @Slf4j
 public class EsRestClient {
@@ -73,75 +111,106 @@ public class EsRestClient {
     private static final int SOCKET_TIMEOUT = 5 * 60 * 1000;
 
     private final RestClient restClient;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private EsRestClient(RestClient restClient) {
+    public EsRestClient(RestClient restClient) {
         this.restClient = restClient;
     }
 
     public static EsRestClient createInstance(Config pluginConfig) {
-        List<String> hosts = pluginConfig.getStringList(EsClusterConnectionConfig.HOSTS.key());
-        Optional<String> username = Optional.empty();
-        Optional<String> password = Optional.empty();
-        if (pluginConfig.hasPath(EsClusterConnectionConfig.USERNAME.key())) {
-            username =
-                    Optional.of(pluginConfig.getString(EsClusterConnectionConfig.USERNAME.key()));
-            if (pluginConfig.hasPath(EsClusterConnectionConfig.PASSWORD.key())) {
-                password =
-                        Optional.of(
-                                pluginConfig.getString(EsClusterConnectionConfig.PASSWORD.key()));
+        Map<String, String> entriesMap =
+                ConfigCenterUtils.getConfigCenterEntries(
+                        pluginConfig.getString(CONFIG_CENTER_TOKEN),
+                        pluginConfig.getString(CONFIG_CENTER_URL),
+                        pluginConfig.getString(ENVIRONMENT),
+                        pluginConfig.getString(CONFIG_CENTER_PROJECT));
+
+        String cluster = pluginConfig.getString(ES_CLUSTER);
+        ProxyContext proxyContext =
+                getProxyContext(entriesMap.get(String.format(PROXY_JSON, cluster)));
+        List<HttpHost> hosts = new ArrayList<>();
+        RestClientBuilder builder;
+        for (String address : StringUtils.split(proxyContext.getHost(), ",")) {
+            URL url = null;
+            try {
+                url = new URL(address);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
             }
+            hosts.add(new HttpHost(url.getHost(), url.getPort(), url.getProtocol()));
         }
-        Optional<String> keystorePath = Optional.empty();
-        Optional<String> keystorePassword = Optional.empty();
-        Optional<String> truststorePath = Optional.empty();
-        Optional<String> truststorePassword = Optional.empty();
-        boolean tlsVerifyCertificate =
-                EsClusterConnectionConfig.TLS_VERIFY_CERTIFICATE.defaultValue();
-        if (pluginConfig.hasPath(EsClusterConnectionConfig.TLS_VERIFY_CERTIFICATE.key())) {
-            tlsVerifyCertificate =
-                    pluginConfig.getBoolean(EsClusterConnectionConfig.TLS_VERIFY_CERTIFICATE.key());
-        }
-        if (tlsVerifyCertificate) {
-            if (pluginConfig.hasPath(EsClusterConnectionConfig.TLS_KEY_STORE_PATH.key())) {
-                keystorePath =
-                        Optional.of(
-                                pluginConfig.getString(
-                                        EsClusterConnectionConfig.TLS_KEY_STORE_PATH.key()));
-            }
-            if (pluginConfig.hasPath(EsClusterConnectionConfig.TLS_KEY_STORE_PASSWORD.key())) {
-                keystorePassword =
-                        Optional.of(
-                                pluginConfig.getString(
-                                        EsClusterConnectionConfig.TLS_KEY_STORE_PASSWORD.key()));
-            }
-            if (pluginConfig.hasPath(EsClusterConnectionConfig.TLS_TRUST_STORE_PATH.key())) {
-                truststorePath =
-                        Optional.of(
-                                pluginConfig.getString(
-                                        EsClusterConnectionConfig.TLS_TRUST_STORE_PATH.key()));
-            }
-            if (pluginConfig.hasPath(EsClusterConnectionConfig.TLS_TRUST_STORE_PASSWORD.key())) {
-                truststorePassword =
-                        Optional.of(
-                                pluginConfig.getString(
-                                        EsClusterConnectionConfig.TLS_TRUST_STORE_PASSWORD.key()));
-            }
-        }
-        boolean tlsVerifyHostnames = EsClusterConnectionConfig.TLS_VERIFY_HOSTNAME.defaultValue();
-        if (pluginConfig.hasPath(EsClusterConnectionConfig.TLS_VERIFY_HOSTNAME.key())) {
-            tlsVerifyHostnames =
-                    pluginConfig.getBoolean(EsClusterConnectionConfig.TLS_VERIFY_HOSTNAME.key());
-        }
-        return createInstance(
-                hosts,
-                username,
-                password,
-                tlsVerifyCertificate,
-                tlsVerifyHostnames,
-                keystorePath,
-                keystorePassword,
-                truststorePath,
-                truststorePassword);
+        builder = RestClient.builder(hosts.toArray(new HttpHost[0]));
+        // httpClientConfigCallback
+        builder.setHttpClientConfigCallback(
+                httpClientBuilder -> {
+                    // credentials provider
+                    CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                    credentialsProvider.setCredentials(
+                            AuthScope.ANY,
+                            new UsernamePasswordCredentials(
+                                    proxyContext.getUser(), proxyContext.getPassword()));
+                    httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+
+                    String clientRootCrt =
+                            entriesMap.get(String.format(CA_CLIENT_ROOT_CRT, cluster)) == null
+                                    ? entriesMap.get(String.format(NEW_CA_CLIENT_ROOT_CRT, cluster))
+                                    : entriesMap.get(String.format(CA_CLIENT_ROOT_CRT, cluster));
+
+                    String clientCrt =
+                            entriesMap.get(String.format(CA_CLIENT_CRT, cluster)) == null
+                                    ? entriesMap.get(String.format(NEW_CA_CLIENT_CRT, cluster))
+                                    : entriesMap.get(String.format(CA_CLIENT_CRT, cluster));
+
+                    String clientKey =
+                            entriesMap.get(String.format(CA_CLIENT_KEY, cluster)) == null
+                                    ? entriesMap.get(String.format(NEW_CA_CLIENT_KEY, cluster))
+                                    : entriesMap.get(String.format(CA_CLIENT_KEY, cluster));
+
+                    // ssl context
+                    String keystorePassword =
+                            pluginConfig.hasPath(KEY_STORE_PASSWORD)
+                                    ? pluginConfig.getString(KEY_STORE_PASSWORD)
+                                    : RandomStringUtil.randomString();
+                    SSLContext sslContext =
+                            sslContext(clientRootCrt, clientCrt, clientKey, keystorePassword);
+                    httpClientBuilder.setSSLContext(sslContext);
+
+                    int maxConnTotal =
+                            pluginConfig.hasPath(MAX_CONN_TOTAL)
+                                    ? pluginConfig.getInt(MAX_CONN_TOTAL)
+                                    : 30;
+                    int maxConnPerRoute =
+                            pluginConfig.hasPath(MAX_CONN_PER_ROUTE)
+                                    ? pluginConfig.getInt(MAX_CONN_PER_ROUTE)
+                                    : 30;
+
+                    httpClientBuilder.setMaxConnTotal(maxConnTotal);
+                    httpClientBuilder.setMaxConnPerRoute(maxConnPerRoute);
+                    return httpClientBuilder;
+                });
+
+        // requestConfigCallback
+        builder.setRequestConfigCallback(
+                requestConfigBuilder -> {
+                    int socketTimeout =
+                            pluginConfig.hasPath(SOCKET_TIMEOUT_MILLIS)
+                                    ? pluginConfig.getInt(SOCKET_TIMEOUT_MILLIS)
+                                    : 30000;
+                    int connectTimeout =
+                            pluginConfig.hasPath(CONNECT_TIMEOUT_MILLIS)
+                                    ? pluginConfig.getInt(CONNECT_TIMEOUT_MILLIS)
+                                    : 3000;
+                    int connectRequestTimeout =
+                            pluginConfig.hasPath(CONNECT_REQUEST_TIMEOUT)
+                                    ? pluginConfig.getInt(CONNECT_REQUEST_TIMEOUT)
+                                    : 2000;
+                    requestConfigBuilder.setSocketTimeout(socketTimeout);
+                    requestConfigBuilder.setConnectTimeout(connectTimeout);
+                    requestConfigBuilder.setConnectionRequestTimeout(connectRequestTimeout);
+                    return requestConfigBuilder;
+                });
+
+        return new EsRestClient(builder.build());
     }
 
     public static EsRestClient createInstance(
@@ -166,6 +235,101 @@ public class EsRestClient {
                         truststorePath,
                         truststorePassword);
         return new EsRestClient(restClientBuilder.build());
+    }
+
+    private static ProxyContext getProxyContext(String proxyString) {
+        if (StringUtils.isBlank(proxyString)) {
+            log.info("proxyString is null or empty.");
+            return null;
+        }
+        try {
+            return MAPPER.readValue(proxyString, ProxyContext.class);
+        } catch (IOException e) {
+            log.error(
+                    "Failed to parse proxy key: {}, error_msg: {}.",
+                    proxyString,
+                    e.getMessage(),
+                    e);
+        }
+        return null;
+    }
+
+    private static SSLContext sslContext(
+            String caRootCrt, String caClientCrt, String primaryKey, String keystorePassword) {
+        try {
+            // 允许使用非 pkcs8 格式秘钥
+            java.security.Security.addProvider(
+                    new org.bouncycastle.jce.provider.BouncyCastleProvider());
+            // 添加服务器 CA 证书
+            CertificateFactory cAf = CertificateFactory.getInstance("X.509");
+            InputStream inputStream = new ByteArrayInputStream(caRootCrt.getBytes());
+            X509Certificate ca = (X509Certificate) cAf.generateCertificate(inputStream);
+            inputStream.close();
+
+            KeyStore caKs = KeyStore.getInstance(KeyStore.getDefaultType());
+            caKs.load(null, null);
+            caKs.setCertificateEntry("ca-certificate", ca);
+            TrustManagerFactory tmf =
+                    TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(caKs);
+
+            // 添加客户端 CA 证书
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            inputStream = new ByteArrayInputStream(caClientCrt.getBytes());
+            X509Certificate caCert = (X509Certificate) cf.generateCertificate(inputStream);
+            inputStream.close();
+
+            // 设置秘钥 KeyStore
+            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+            ks.load(null, null);
+            ks.setCertificateEntry("certificate", caCert);
+
+            inputStream = new ByteArrayInputStream(primaryKey.getBytes());
+            PrivateKey privateKey = getPrivateKey(inputStream);
+            char[] pwdChar = keystorePassword.toCharArray();
+            ks.setKeyEntry(
+                    "private-key",
+                    privateKey,
+                    pwdChar,
+                    new java.security.cert.Certificate[] {caCert});
+            KeyManagerFactory kmf =
+                    KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            kmf.init(ks, pwdChar);
+
+            // create SSL socket
+            SSLContext context = SSLContext.getInstance("TLSv1.2");
+            context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
+            return context;
+        } catch (Exception e) {
+            log.error("Failed to create SSLContext!", e);
+            throw new RuntimeException("Failed to create SSLContext!", e);
+        }
+    }
+
+    private static PrivateKey getPrivateKey(InputStream inputStream) throws Exception {
+        Base64.Decoder decoder = Base64.getMimeDecoder();
+        byte[] buffer = decoder.decode(getPem(inputStream));
+
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(buffer);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePrivate(keySpec);
+    }
+
+    private static String getPem(InputStream inputStream) throws Exception {
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+        String readLine = null;
+        StringBuilder sb = new StringBuilder();
+        while ((readLine = br.readLine()) != null) {
+            if (readLine.charAt(0) == '-') {
+                continue;
+            } else {
+                sb.append(readLine);
+                sb.append('\r');
+            }
+        }
+        br.close();
+        inputStream.close();
+        return sb.toString();
     }
 
     private static RestClientBuilder getRestClientBuilder(

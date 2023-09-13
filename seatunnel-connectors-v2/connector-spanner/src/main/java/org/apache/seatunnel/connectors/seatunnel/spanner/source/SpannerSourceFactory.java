@@ -1,18 +1,25 @@
 package org.apache.seatunnel.connectors.seatunnel.spanner.source;
 
-import com.google.auto.service.AutoService;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.seatunnel.api.configuration.util.OptionRule;
 import org.apache.seatunnel.api.source.SeaTunnelSource;
 import org.apache.seatunnel.api.table.factory.Factory;
 import org.apache.seatunnel.api.table.factory.TableSourceFactory;
 import org.apache.seatunnel.connectors.seatunnel.spanner.constants.SpannerConstants;
 
+import com.google.auto.service.AutoService;
+import lombok.extern.slf4j.Slf4j;
+
 import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_ENVIRONMENT;
 import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_PROJECT;
 import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_TOKEN;
 import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_URL;
-import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.*;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.DATABASE_ID;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.IMPORT_QUERY;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.INSTANCE_ID;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.MAX_PARTITIONS;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.PARTITION_SIZE_MB;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.PROJECT_ID;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.TABLE_ID;
 
 /**
  * @author: gf.xu
@@ -40,10 +47,7 @@ public class SpannerSourceFactory implements TableSourceFactory {
                         CONFIG_CENTER_TOKEN,
                         CONFIG_CENTER_URL,
                         CONFIG_CENTER_ENVIRONMENT)
-                .optional(
-                        IMPORT_QUERY,
-                        PARTITION_SIZE_MB,
-                        MAX_PARTITIONS)
+                .optional(IMPORT_QUERY, PARTITION_SIZE_MB, MAX_PARTITIONS)
                 .build();
     }
 

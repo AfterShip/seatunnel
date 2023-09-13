@@ -1,11 +1,24 @@
 package org.apache.seatunnel.connectors.seatunnel.bigtable.sink;
 
-import com.google.auto.service.AutoService;
 import org.apache.seatunnel.api.configuration.util.OptionRule;
 import org.apache.seatunnel.api.table.factory.Factory;
 import org.apache.seatunnel.api.table.factory.TableSinkFactory;
 
-import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.*;
+import com.google.auto.service.AutoService;
+
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.BIGTABLE_OPTIONS;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.COLUMN_MAPPINGS;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.CONFIG_CENTER_ENVIRONMENT;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.CONFIG_CENTER_PROJECT;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.CONFIG_CENTER_TOKEN;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.CONFIG_CENTER_URL;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.ENCODING;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.INSTANCE_ID;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.KEY_ALIAS;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.PROJECT_ID;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.SINK_BUFFER_FLUSH_MAX_MUTATIONS;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.SINK_BUFFER_FLUSH_MAX_SIZE_IN_BYTES;
+import static org.apache.seatunnel.connectors.seatunnel.bigtable.config.BigtableConfig.TABLE_ID;
 
 /**
  * @author: gf.xu

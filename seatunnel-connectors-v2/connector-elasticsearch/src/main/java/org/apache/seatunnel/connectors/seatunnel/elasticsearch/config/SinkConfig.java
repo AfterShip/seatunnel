@@ -20,8 +20,6 @@ package org.apache.seatunnel.connectors.seatunnel.elasticsearch.config;
 import org.apache.seatunnel.api.configuration.Option;
 import org.apache.seatunnel.api.configuration.Options;
 
-import java.util.List;
-
 public class SinkConfig {
 
     public static final Option<String> INDEX =
@@ -36,11 +34,17 @@ public class SinkConfig {
                     .stringType()
                     .noDefaultValue()
                     .withDescription(
-                            "Elasticsearch index type, it is recommended not to specify in elasticsearch 6 and above");
+                            "Identifies the value of index: output schema field or fill in manually");
 
-    public static final Option<List<String>> PRIMARY_KEYS =
-            Options.key("primary_keys")
-                    .listType(String.class)
+    public static final Option<String> ACTION_TYPE =
+            Options.key("action_type")
+                    .stringType()
+                    .noDefaultValue()
+                    .withDescription("Identifies the type of request action: index or upsert");
+
+    public static final Option<String> ID_FIELD =
+            Options.key("id_field")
+                    .stringType()
                     .noDefaultValue()
                     .withDescription("Primary key fields used to generate the document `_id`");
 
@@ -52,11 +56,18 @@ public class SinkConfig {
                             "Delimiter for composite keys (\"_\" by default), e.g., \"$\" would result in document `_id` \"KEY1$KEY2$KEY3\".");
 
     @SuppressWarnings("checkstyle:MagicNumber")
-    public static final Option<Integer> MAX_BATCH_SIZE =
-            Options.key("max_batch_size")
+    public static final Option<Integer> BATCH_NUMBER =
+            Options.key("batch_number")
                     .intType()
-                    .defaultValue(10)
-                    .withDescription("batch bulk doc max size");
+                    .defaultValue(1000)
+                    .withDescription("Number of data records written per batch");
+
+    @SuppressWarnings("checkstyle:MagicNumber")
+    public static final Option<Integer> BATCH_SIZE_MB =
+            Options.key("batch_size_mb")
+                    .intType()
+                    .defaultValue(5)
+                    .withDescription("Maximum data records import per batch");
 
     @SuppressWarnings("checkstyle:MagicNumber")
     public static final Option<Integer> MAX_RETRY_COUNT =
@@ -64,4 +75,19 @@ public class SinkConfig {
                     .intType()
                     .defaultValue(3)
                     .withDescription("one bulk request max try count");
+
+    public static final Option<String> CLUSTER =
+            Options.key("cluster").stringType().noDefaultValue().withDescription("cluster of es");
+
+    public static final Option<Boolean> ID_FIELD_IGNORED =
+            Options.key("id_field_ignored")
+                    .booleanType()
+                    .defaultValue(false)
+                    .withDescription("whether to ignore id field");
+
+    public static final Option<String> WRITE_AS_OBJECT_FIELDS =
+            Options.key("write_as_object_fields")
+                    .stringType()
+                    .noDefaultValue()
+                    .withDescription("Write as object fields, split by comma.");
 }

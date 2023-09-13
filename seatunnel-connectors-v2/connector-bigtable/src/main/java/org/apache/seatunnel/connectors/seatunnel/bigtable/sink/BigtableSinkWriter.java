@@ -1,17 +1,5 @@
 package org.apache.seatunnel.connectors.seatunnel.bigtable.sink;
 
-import com.google.auth.Credentials;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.ByteArray;
-import com.google.cloud.bigtable.hbase.BigtableConfiguration;
-import com.google.cloud.bigtable.hbase.BigtableOptionsFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.BufferedMutator;
-import org.apache.hadoop.hbase.client.BufferedMutatorParams;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
@@ -22,6 +10,20 @@ import org.apache.seatunnel.connectors.seatunnel.bigtable.exception.BigtableConn
 import org.apache.seatunnel.connectors.seatunnel.bigtable.utils.HBaseConfigurationUtil;
 import org.apache.seatunnel.connectors.seatunnel.common.sink.AbstractSinkWriter;
 import org.apache.seatunnel.connectors.seatunnel.common.utils.ConfigCenterUtils;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.BufferedMutator;
+import org.apache.hadoop.hbase.client.BufferedMutatorParams;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.util.Bytes;
+
+import com.google.auth.Credentials;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.ByteArray;
+import com.google.cloud.bigtable.hbase.BigtableConfiguration;
+import com.google.cloud.bigtable.hbase.BigtableOptionsFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -44,9 +46,11 @@ public class BigtableSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void> {
     private BigtableParameters bigtableParameters;
     private transient AtomicLong numPendingRequests;
 
-    public BigtableSinkWriter(SeaTunnelRowType seaTunnelRowType,
-                              BigtableParameters bigtableParameters,
-                              int rowkeyColumnIndex) throws IOException {
+    public BigtableSinkWriter(
+            SeaTunnelRowType seaTunnelRowType,
+            BigtableParameters bigtableParameters,
+            int rowkeyColumnIndex)
+            throws IOException {
         this.seaTunnelRowType = seaTunnelRowType;
         this.rowkeyColumnIndex = rowkeyColumnIndex;
         this.bigtableParameters = bigtableParameters;
@@ -72,12 +76,12 @@ public class BigtableSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void> {
     }
 
     private Credentials getCredentials(BigtableParameters bigtableParameters) throws IOException {
-        String credentials = ConfigCenterUtils.getServiceAccountFromConfigCenter(
-                bigtableParameters.getConfigCenterUrl(),
-                bigtableParameters.getConfigCenterProject(),
-                bigtableParameters.getConfigCenterToken(),
-                bigtableParameters.getConfigCenterEnvironment()
-        );
+        String credentials =
+                ConfigCenterUtils.getServiceAccountFromConfigCenter(
+                        bigtableParameters.getConfigCenterUrl(),
+                        bigtableParameters.getConfigCenterProject(),
+                        bigtableParameters.getConfigCenterToken(),
+                        bigtableParameters.getConfigCenterEnvironment());
         return GoogleCredentials.fromStream(
                 new ByteArrayInputStream(credentials.getBytes(StandardCharsets.UTF_8)));
     }
@@ -87,7 +91,7 @@ public class BigtableSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void> {
         byte[] rowKeyBytes = convertColumnToBytes(element, rowkeyColumnIndex);
         Put put = new Put(rowKeyBytes);
         for (int i = 0; i < element.getArity(); i++) {
-            //todo to be confirmed
+            // todo to be confirmed
             if (i == rowkeyColumnIndex) {
                 continue;
             }
@@ -103,7 +107,8 @@ public class BigtableSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void> {
                     columnBytes);
         }
         mutator.mutate(put);
-        if (numPendingRequests.incrementAndGet() >= bigtableParameters.getBufferFlushMaxMutations()) {
+        if (numPendingRequests.incrementAndGet()
+                >= bigtableParameters.getBufferFlushMaxMutations()) {
             mutator.flush();
             numPendingRequests.set(0);
         }
@@ -144,7 +149,8 @@ public class BigtableSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void> {
                         String.format(
                                 "Bigtable connector does not support this column type [%s]",
                                 fieldType.getSqlType());
-                throw new BigtableConnectorException(CommonErrorCode.UNSUPPORTED_DATA_TYPE, errorMsg);
+                throw new BigtableConnectorException(
+                        CommonErrorCode.UNSUPPORTED_DATA_TYPE, errorMsg);
         }
     }
 
@@ -158,7 +164,6 @@ public class BigtableSinkWriter extends AbstractSinkWriter<SeaTunnelRow, Void> {
             if (this.connection != null) {
                 this.connection.close();
             }
-
         }
     }
 }

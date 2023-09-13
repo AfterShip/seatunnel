@@ -3,6 +3,8 @@ package org.apache.seatunnel.connectors.seatunnel.common.utils;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.services.storage.StorageScopes;
+import com.google.auth.Credentials;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 
 import java.io.ByteArrayInputStream;
@@ -46,6 +48,15 @@ public class GCPUtils {
                     .createScoped(StorageScopes.all());
         } catch (IOException e) {
             throw new RuntimeException("Get credential failed." + e);
+        }
+    }
+
+    public static Credentials getCredentials(String content) {
+        try {
+            return GoogleCredentials.fromStream(new ByteArrayInputStream(content.getBytes()))
+                    .createScoped(StorageScopes.all());
+        } catch (IOException e) {
+            throw new RuntimeException("Get credentials failed." + e);
         }
     }
 

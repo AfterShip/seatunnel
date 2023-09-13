@@ -1,17 +1,33 @@
 package org.apache.seatunnel.connectors.seatunnel.spanner.source;
 
-import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.*;
-import com.google.common.base.Strings;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.seatunnel.api.source.SourceSplitEnumerator;
 import org.apache.seatunnel.common.exception.CommonErrorCode;
 import org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerParameters;
 import org.apache.seatunnel.connectors.seatunnel.spanner.exception.SpannerConnectorException;
 import org.apache.seatunnel.connectors.seatunnel.spanner.utils.SpannerUtil;
 
+import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.BatchClient;
+import com.google.cloud.spanner.BatchReadOnlyTransaction;
+import com.google.cloud.spanner.BatchTransactionId;
+import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.Partition;
+import com.google.cloud.spanner.PartitionOptions;
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.TimestampBound;
+import com.google.common.base.Strings;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.seatunnel.connectors.seatunnel.spanner.exception.SpannerConnectorErrorCode.SPANNER_CONNECTOR_ERROR;
@@ -24,7 +40,8 @@ import static org.apache.seatunnel.connectors.seatunnel.spanner.exception.Spanne
  * @date: 2023/9/6 14:49
  */
 @Slf4j
-public class SpannerSourceSplitEnumerator implements SourceSplitEnumerator<SpannerSourceSplit, SpannerSourceState> {
+public class SpannerSourceSplitEnumerator
+        implements SourceSplitEnumerator<SpannerSourceSplit, SpannerSourceState> {
 
     private transient Spanner spanner;
 
@@ -70,10 +87,7 @@ public class SpannerSourceSplitEnumerator implements SourceSplitEnumerator<Spann
     }
 
     /**
-     * enumerate splits
-     * add splits to pendingSplit
-     * set shouldEnumerate to false
-     * get spanner splits
+     * enumerate splits add splits to pendingSplit set shouldEnumerate to false get spanner splits
      */
     @Override
     public void run() throws Exception {
@@ -81,28 +95,40 @@ public class SpannerSourceSplitEnumerator implements SourceSplitEnumerator<Spann
 
         if (shouldEnumerate) {
             BatchClient batchClient =
-                    spanner.getBatchClient(DatabaseId.of(parameters.getProjectId(), parameters.getInstanceId(),
-                            parameters.getDatabaseId()));
-            // Returns the logical start time of the batch. For batch pipelines, this is the time the pipeline was triggered.
+                    spanner.getBatchClient(
+                            DatabaseId.of(
+                                    parameters.getProjectId(),
+                                    parameters.getInstanceId(),
+                                    parameters.getDatabaseId()));
+            // Returns the logical start time of the batch. For batch pipelines, this is the time
+            // the pipeline was triggered.
             // For realtime pipelines, this is the time for the current microbatch being processed.
             // Returns:Logical time in milliseconds since epoch time (00:00:00 January 1, 1970 UTC).
             // TODO double check, we use current time as logical start time;
             Timestamp logicalStartTimeMicros =
-                    Timestamp.ofTimeMicroseconds(TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis()));
+                    Timestamp.ofTimeMicroseconds(
+                            TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis()));
 
             // create batch transaction id
             BatchReadOnlyTransaction batchReadOnlyTransaction =
-                    batchClient.batchReadOnlyTransaction(TimestampBound.ofReadTimestamp(logicalStartTimeMicros));
-            BatchTransactionId batchTransactionId = batchReadOnlyTransaction.getBatchTransactionId();
+                    batchClient.batchReadOnlyTransaction(
+                            TimestampBound.ofReadTimestamp(logicalStartTimeMicros));
+            BatchTransactionId batchTransactionId =
+                    batchReadOnlyTransaction.getBatchTransactionId();
 
-            // partitionQuery returns ImmutableList which doesn't implement java Serializable interface,
+            // partitionQuery returns ImmutableList which doesn't implement java Serializable
+            // interface,
             // we add to array list, which implements java Serializable
-            String importQuery = Strings.isNullOrEmpty(parameters.getImportQuery()) ?
-                    String.format("Select * from %s;", parameters.getTableId()) : parameters.getImportQuery();
+            String importQuery =
+                    Strings.isNullOrEmpty(parameters.getImportQuery())
+                            ? String.format("Select * from %s;", parameters.getTableId())
+                            : parameters.getImportQuery();
             List<Partition> partitions =
                     new ArrayList<>(
-                            batchReadOnlyTransaction.partitionQuery(getPartitionOptions(),
-                                    Statement.of(importQuery), Options.priority(Options.RpcPriority.LOW)));
+                            batchReadOnlyTransaction.partitionQuery(
+                                    getPartitionOptions(),
+                                    Statement.of(importQuery),
+                                    Options.priority(Options.RpcPriority.LOW)));
             List<SpannerSourceSplit> splits = new ArrayList<>();
             for (Partition partition : partitions) {
                 splits.add(new SpannerSourceSplit(batchTransactionId, partition));
@@ -117,8 +143,7 @@ public class SpannerSourceSplitEnumerator implements SourceSplitEnumerator<Spann
             assignSplit(readers);
         }
 
-        log.info(
-                "No more splits to assign." + " Sending NoMoreSplitsEvent to reader {}.", readers);
+        log.info("No more splits to assign." + " Sending NoMoreSplitsEvent to reader {}.", readers);
         readers.forEach(context::signalNoMoreSplits);
     }
 
@@ -183,7 +208,8 @@ public class SpannerSourceSplitEnumerator implements SourceSplitEnumerator<Spann
     @Override
     public void handleSplitRequest(int subtaskId) {
         throw new SpannerConnectorException(
-                CommonErrorCode.UNSUPPORTED_OPERATION, "Unsupported handleSplitRequest: " + subtaskId);
+                CommonErrorCode.UNSUPPORTED_OPERATION,
+                "Unsupported handleSplitRequest: " + subtaskId);
     }
 
     @Override

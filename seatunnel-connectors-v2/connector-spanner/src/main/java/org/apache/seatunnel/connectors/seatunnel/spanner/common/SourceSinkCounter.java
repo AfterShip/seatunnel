@@ -6,7 +6,6 @@ package org.apache.seatunnel.connectors.seatunnel.spanner.common;
  * @date: 2023/9/6 18:39
  */
 public enum SourceSinkCounter {
-
     BYTES_READ("bytes-read"),
     BYTES_WRITTEN("bytes-written");
 

@@ -1,14 +1,24 @@
 package org.apache.seatunnel.connectors.seatunnel.spanner.config;
 
+import org.apache.seatunnel.shade.com.typesafe.config.Config;
+
 import lombok.Builder;
 import lombok.Getter;
-import org.apache.seatunnel.shade.com.typesafe.config.Config;
 
 import java.io.Serializable;
 
-import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.*;
+import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_ENVIRONMENT;
 import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_PROJECT;
-import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.*;
+import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_TOKEN;
+import static org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig.CONFIG_CENTER_URL;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.BATCH_SIZE;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.DATABASE_ID;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.IMPORT_QUERY;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.INSTANCE_ID;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.MAX_PARTITIONS;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.PARTITION_SIZE_MB;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.PROJECT_ID;
+import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerConfig.TABLE_ID;
 
 /**
  * @author: gf.xu
@@ -17,7 +27,7 @@ import static org.apache.seatunnel.connectors.seatunnel.spanner.config.SpannerCo
  */
 @Getter
 @Builder
-public class SpannerParameters implements Serializable{
+public class SpannerParameters implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -43,8 +53,7 @@ public class SpannerParameters implements Serializable{
 
     private Long maxPartitions;
 
-    @Builder.Default
-    private int batchSize = BATCH_SIZE.defaultValue();
+    @Builder.Default private int batchSize = BATCH_SIZE.defaultValue();
 
     public static SpannerParameters buildWithSinkConfig(Config pluginConfig) {
         SpannerParametersBuilder builder = SpannerParameters.builder();
@@ -110,7 +119,8 @@ public class SpannerParameters implements Serializable{
         if (pluginConfig.hasPath(IMPORT_QUERY.key())) {
             builder.importQuery(pluginConfig.getString(IMPORT_QUERY.key()));
         } else {
-            builder.importQuery(String.format("Select * from %s;", pluginConfig.getString(TABLE_ID.key())));
+            builder.importQuery(
+                    String.format("Select * from %s;", pluginConfig.getString(TABLE_ID.key())));
         }
 
         // max_partitions

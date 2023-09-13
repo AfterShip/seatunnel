@@ -1,16 +1,19 @@
 package org.apache.seatunnel.connectors.seatunnel.spanner.serialization;
 
+import org.apache.seatunnel.api.table.type.RowKind;
+import org.apache.seatunnel.api.table.type.SeaTunnelRow;
+import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
+
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Type;
-import org.apache.seatunnel.api.table.type.RowKind;
-import org.apache.seatunnel.api.table.type.SeaTunnelRow;
-import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 
 import java.math.BigDecimal;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,7 +25,6 @@ import java.util.stream.Collectors;
  * @date: 2023/9/7 10:49
  */
 public class DefaultSeaTunnelRowDeserializer implements SeaTunnelRowDeserializer {
-
 
     private SeaTunnelRowType rowTypeInfo;
 
@@ -60,20 +62,24 @@ public class DefaultSeaTunnelRowDeserializer implements SeaTunnelRowDeserializer
                     values.add(byteArray.toByteArray());
                     break;
                 case DATE:
-                    // spanner DATE is a date without time zone. so create LocalDate from spanner DATE
+                    // spanner DATE is a date without time zone. so create LocalDate from spanner
+                    // DATE
                     Date spannerDate = resultSet.getDate(fieldName);
-                    values.add(LocalDate.of(spannerDate.getYear(), spannerDate.getMonth(),
-                            spannerDate.getDayOfMonth()));
+                    values.add(
+                            LocalDate.of(
+                                    spannerDate.getYear(),
+                                    spannerDate.getMonth(),
+                                    spannerDate.getDayOfMonth()));
                     break;
                 case TIMESTAMP:
                     Timestamp spannerTs = resultSet.getTimestamp(fieldName);
-                    // Spanner TIMESTAMP supports nano second level precision, however, cdap schema only supports
+                    // Spanner TIMESTAMP supports nano second level precision, however, cdap schema
+                    // only supports
                     // microsecond level precision.
                     // TODO 时间精度是否能够满足
-                    LocalDateTime localDateTime = LocalDateTime.ofEpochSecond(
-                            spannerTs.getSeconds(),
-                            spannerTs.getNanos(),
-                            ZoneOffset.UTC);
+                    LocalDateTime localDateTime =
+                            LocalDateTime.ofEpochSecond(
+                                    spannerTs.getSeconds(), spannerTs.getNanos(), ZoneOffset.UTC);
                     values.add(localDateTime);
                     break;
                 case JSON:
@@ -84,7 +90,9 @@ public class DefaultSeaTunnelRowDeserializer implements SeaTunnelRowDeserializer
                     values.add(resultSetBigDecimal);
                     break;
                 case ARRAY:
-                    List<?> arrayValues = transformArrayToList(resultSet, fieldName, columnType.getArrayElementType());
+                    List<?> arrayValues =
+                            transformArrayToList(
+                                    resultSet, fieldName, columnType.getArrayElementType());
                     values.add(arrayValues.toArray());
                     break;
             }
@@ -95,7 +103,8 @@ public class DefaultSeaTunnelRowDeserializer implements SeaTunnelRowDeserializer
         return row;
     }
 
-    private List<?> transformArrayToList(ResultSet resultSet, String fieldName, Type arrayElementType) {
+    private List<?> transformArrayToList(
+            ResultSet resultSet, String fieldName, Type arrayElementType) {
         if (resultSet.isNull(fieldName)) {
             return Collections.emptyList();
         }
@@ -110,22 +119,20 @@ public class DefaultSeaTunnelRowDeserializer implements SeaTunnelRowDeserializer
             case STRING:
                 return resultSet.getStringList(fieldName);
             case BYTES:
-                return resultSet.getBytesList(fieldName)
-                        .stream()
+                return resultSet.getBytesList(fieldName).stream()
                         .map(byteArray -> byteArray == null ? null : byteArray.toByteArray())
                         .collect(Collectors.toList());
             case DATE:
                 // spanner DATE is a date without time zone. so create LocalDate from spanner DATE
-                return resultSet.getDateList(fieldName)
-                        .stream()
+                return resultSet.getDateList(fieldName).stream()
                         .map(this::convertSpannerDate)
                         .collect(Collectors.toList());
             case TIMESTAMP:
-                // Spanner TIMESTAMP supports nano second level precision, however, cdap schema only supports
+                // Spanner TIMESTAMP supports nano second level precision, however, cdap schema only
+                // supports
                 // microsecond level precision.
                 // TODO 时间精度是否能够满足
-                return resultSet.getTimestampList(fieldName)
-                        .stream()
+                return resultSet.getTimestampList(fieldName).stream()
                         .map(this::convertSpannerTimestamp)
                         .collect(Collectors.toList());
             case JSON:
@@ -143,9 +150,8 @@ public class DefaultSeaTunnelRowDeserializer implements SeaTunnelRowDeserializer
             return null;
         }
 
-        return LocalDate.of(spannerDate.getYear(),
-                spannerDate.getMonth(),
-                spannerDate.getDayOfMonth());
+        return LocalDate.of(
+                spannerDate.getYear(), spannerDate.getMonth(), spannerDate.getDayOfMonth());
     }
 
     private LocalDateTime convertSpannerTimestamp(Timestamp timestamp) {
@@ -154,8 +160,6 @@ public class DefaultSeaTunnelRowDeserializer implements SeaTunnelRowDeserializer
         }
 
         return LocalDateTime.ofEpochSecond(
-                timestamp.getSeconds(),
-                timestamp.getNanos(),
-                ZoneOffset.UTC);
+                timestamp.getSeconds(), timestamp.getNanos(), ZoneOffset.UTC);
     }
 }

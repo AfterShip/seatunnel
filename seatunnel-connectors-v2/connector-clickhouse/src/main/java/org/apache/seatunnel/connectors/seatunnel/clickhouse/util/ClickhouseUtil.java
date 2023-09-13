@@ -25,35 +25,41 @@ import com.clickhouse.client.ClickHouseProtocol;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ClickhouseUtil {
 
     public static List<ClickHouseNode> createNodes(
+            String nodeAddress, String database, String username, String password) {
+        return createNodes(nodeAddress, database, username, password, null);
+    }
+
+    public static List<ClickHouseNode> createNodes(
             String nodeAddress,
             String database,
-            String serverTimeZone,
             String username,
-            String password) {
+            String password,
+            Map<String, String> options) {
         return Arrays.stream(nodeAddress.split(","))
                 .map(
                         address -> {
                             String[] nodeAndPort = address.split(":", 2);
                             if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
                                 return ClickHouseNode.builder()
+                                        .options(options)
                                         .host(nodeAndPort[0])
                                         .port(
                                                 ClickHouseProtocol.HTTP,
                                                 Integer.parseInt(nodeAndPort[1]))
                                         .database(database)
-                                        .timeZone(serverTimeZone)
                                         .build();
                             }
                             return ClickHouseNode.builder()
+                                    .options(options)
                                     .host(nodeAndPort[0])
                                     .port(ClickHouseProtocol.HTTP, Integer.parseInt(nodeAndPort[1]))
                                     .database(database)
-                                    .timeZone(serverTimeZone)
                                     .credentials(
                                             ClickHouseCredentials.fromUserAndPassword(
                                                     username, password))
