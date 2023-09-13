@@ -5,9 +5,7 @@ import org.apache.seatunnel.common.exception.SeaTunnelRuntimeException;
 
 /**
  * @author wq.pan on 2023/8/30
- * @className GcsConnectorException
- * @Description
- * @Version: 1.0
+ * @className GcsConnectorException @Description @Version: 1.0
  */
 public class GcsConnectorException extends SeaTunnelRuntimeException {
 
@@ -15,7 +13,8 @@ public class GcsConnectorException extends SeaTunnelRuntimeException {
         super(seaTunnelErrorCode, errorMessage);
     }
 
-    public GcsConnectorException(SeaTunnelErrorCode seaTunnelErrorCode, String errorMessage, Throwable cause) {
+    public GcsConnectorException(
+            SeaTunnelErrorCode seaTunnelErrorCode, String errorMessage, Throwable cause) {
         super(seaTunnelErrorCode, errorMessage, cause);
     }
 }

@@ -1,10 +1,8 @@
 package org.apache.seatunnel.connectors.seatunnel.gcs.exception;
 
-
 import org.apache.seatunnel.common.exception.SeaTunnelErrorCode;
 
 public enum GcsConnectorErrorCode implements SeaTunnelErrorCode {
-
     VALIDATE_FAILED("Gcs-001", "config validate failed.");
 
     private final String code;

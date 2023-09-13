@@ -1,10 +1,11 @@
 package org.apache.seatunnel.connectors.seatunnel.gcs.sink.writer;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.seatunnel.common.exception.CommonErrorCode;
 import org.apache.seatunnel.connectors.seatunnel.gcs.config.FileFormat;
 import org.apache.seatunnel.connectors.seatunnel.gcs.config.FileSinkConfig;
 import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class WriteStrategyFactory {
@@ -27,5 +28,4 @@ public class WriteStrategyFactory {
     public static WriteStrategy of(FileFormat fileFormat, FileSinkConfig fileSinkConfig) {
         return fileFormat.getWriteStrategy(fileSinkConfig);
     }
-
 }

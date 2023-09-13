@@ -1,16 +1,17 @@
 package org.apache.seatunnel.connectors.seatunnel.gcs.sink.writer;
 
+import org.apache.seatunnel.shade.com.fasterxml.jackson.core.JsonGenerator;
+import org.apache.seatunnel.shade.com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.seatunnel.api.table.type.SeaTunnelRow;
 import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.common.exception.CommonErrorCode;
 import org.apache.seatunnel.connectors.seatunnel.gcs.config.FileSinkConfig;
 import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
 import org.apache.seatunnel.connectors.seatunnel.gcs.sink.json.RowToJson;
-import org.apache.seatunnel.shade.com.fasterxml.jackson.core.JsonGenerator;
-import org.apache.seatunnel.shade.com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -45,7 +46,8 @@ public class JsonWriteStrategy extends AbstractWriteStrategy {
             writer.write(record);
             writer.newLine();
         } catch (Exception e) {
-            throw new GcsConnectorException(CommonErrorCode.FILE_OPERATION_FAILED,
+            throw new GcsConnectorException(
+                    CommonErrorCode.FILE_OPERATION_FAILED,
                     String.format("Open file output stream [%s] failed", filePath),
                     e);
         }
@@ -79,7 +81,8 @@ public class JsonWriteStrategy extends AbstractWriteStrategy {
         if (writer == null) {
             try {
                 BufferedWriter newWriter =
-                        new BufferedWriter(new OutputStreamWriter(fileSystemUtils.getOutputStream(filePath)));
+                        new BufferedWriter(
+                                new OutputStreamWriter(fileSystemUtils.getOutputStream(filePath)));
                 this.beingWrittenOutputStream.put(filePath, newWriter);
                 return newWriter;
             } catch (IOException e) {
@@ -99,7 +102,10 @@ public class JsonWriteStrategy extends AbstractWriteStrategy {
             for (int i = 0; i < fieldNames.length; i++) {
                 String fieldName = this.seaTunnelRowType.getFieldName(i);
                 Object value = element.getField(i);
-                RowToJson.write(generator, fieldName, value,
+                RowToJson.write(
+                        generator,
+                        fieldName,
+                        value,
                         seaTunnelRowType.getFieldType(seaTunnelRowType.indexOf(fieldName)));
             }
             generator.writeEndObject();
@@ -109,5 +115,4 @@ public class JsonWriteStrategy extends AbstractWriteStrategy {
         }
         return writer.toString();
     }
-
 }

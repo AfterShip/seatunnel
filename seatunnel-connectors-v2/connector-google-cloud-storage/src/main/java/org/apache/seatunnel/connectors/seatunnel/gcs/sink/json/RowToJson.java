@@ -1,9 +1,15 @@
 package org.apache.seatunnel.connectors.seatunnel.gcs.sink.json;
 
-import org.apache.seatunnel.api.table.type.*;
+import org.apache.seatunnel.shade.com.fasterxml.jackson.core.JsonGenerator;
+
+import org.apache.seatunnel.api.table.type.ArrayType;
+import org.apache.seatunnel.api.table.type.MapType;
+import org.apache.seatunnel.api.table.type.SeaTunnelDataType;
+import org.apache.seatunnel.api.table.type.SeaTunnelRow;
+import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
+import org.apache.seatunnel.api.table.type.SqlType;
 import org.apache.seatunnel.common.exception.CommonErrorCode;
 import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
-import org.apache.seatunnel.shade.com.fasterxml.jackson.core.JsonGenerator;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -15,18 +21,21 @@ import java.util.Objects;
 
 public class RowToJson {
 
-    /**
-     * Writes object and writes to json writer.
-     */
-    public static void write(JsonGenerator generator, String name, Object object, SeaTunnelDataType rowType) throws IOException {
+    /** Writes object and writes to json writer. */
+    public static void write(
+            JsonGenerator generator, String name, Object object, SeaTunnelDataType rowType)
+            throws IOException {
         write(generator, name, false, object, rowType);
     }
 
-    /**
-     * Writes object and writes to json writer.
-     */
-    private static void write(JsonGenerator generator, String name, boolean isArrayItem, Object object,
-                              SeaTunnelDataType rowType) throws IOException {
+    /** Writes object and writes to json writer. */
+    private static void write(
+            JsonGenerator generator,
+            String name,
+            boolean isArrayItem,
+            Object object,
+            SeaTunnelDataType rowType)
+            throws IOException {
         SqlType sqlType = rowType.getSqlType();
         switch (sqlType) {
             case NULL:
@@ -68,11 +77,14 @@ public class RowToJson {
         }
     }
 
-    /**
-     * Writes simple types to json writer.
-     */
-    private static void writeSimpleTypes(JsonGenerator generator, String name, boolean isArrayItem, Object object,
-                                         SeaTunnelDataType rowType) throws IOException {
+    /** Writes simple types to json writer. */
+    private static void writeSimpleTypes(
+            JsonGenerator generator,
+            String name,
+            boolean isArrayItem,
+            Object object,
+            SeaTunnelDataType rowType)
+            throws IOException {
         if (!isArrayItem) {
             generator.writeFieldName(name);
         }
@@ -121,7 +133,8 @@ public class RowToJson {
                     byte[] bytes = (byte[]) object;
                     writeBytes(bytes, 0, bytes.length, generator);
                 } else {
-                    throw new IOException("Expects either ByteBuffer or byte[]. Got " + object.getClass());
+                    throw new IOException(
+                            "Expects either ByteBuffer or byte[]. Got " + object.getClass());
                 }
                 break;
             case DATE:
@@ -130,22 +143,29 @@ public class RowToJson {
                 generator.writeString(object.toString());
                 break;
             default:
-                throw new IllegalStateException(String.format("Field '%s' is of unsupported type '%s'",
-                        name, sqlType));
+                throw new IllegalStateException(
+                        String.format("Field '%s' is of unsupported type '%s'", name, sqlType));
         }
     }
 
-    /**
-     * 根据标志 writeAsObject，判断是否需要将 string 类型转为 object
-     */
-    private static void writeString(JsonGenerator generator, String name, boolean isArrayItem, Object object,
-                                    SeaTunnelDataType rowType) throws IOException {
+    /** 根据标志 writeAsObject，判断是否需要将 string 类型转为 object */
+    private static void writeString(
+            JsonGenerator generator,
+            String name,
+            boolean isArrayItem,
+            Object object,
+            SeaTunnelDataType rowType)
+            throws IOException {
         writeSimpleTypes(generator, name, isArrayItem, object, rowType);
     }
 
     private static void encodeBytes(JsonGenerator generator, ByteBuffer buffer) throws IOException {
         if (buffer.hasArray()) {
-            writeBytes(buffer.array(), buffer.arrayOffset() + buffer.position(), buffer.remaining(), generator);
+            writeBytes(
+                    buffer.array(),
+                    buffer.arrayOffset() + buffer.position(),
+                    buffer.remaining(),
+                    generator);
         } else {
             byte[] buf = new byte[buffer.remaining()];
             buffer.mark();
@@ -155,7 +175,8 @@ public class RowToJson {
         }
     }
 
-    public static void writeBytes(byte[] bytes, int off, int len, JsonGenerator generator) throws IOException {
+    public static void writeBytes(byte[] bytes, int off, int len, JsonGenerator generator)
+            throws IOException {
         generator.writeStartArray();
         for (int i = off; i < off + len; i++) {
             generator.writeNumber(bytes[i]);
@@ -163,13 +184,14 @@ public class RowToJson {
         generator.writeEndArray();
     }
 
-    private static void writeArray(JsonGenerator generator,
-                                   String name,
-                                   Object value,
-                                   SeaTunnelDataType rowType) throws IOException {
+    private static void writeArray(
+            JsonGenerator generator, String name, Object value, SeaTunnelDataType rowType)
+            throws IOException {
         if (value == null) {
             throw new RuntimeException(
-                    String.format("Field '%s' is of value null, which is not a valid value for BigQuery type array.", name));
+                    String.format(
+                            "Field '%s' is of value null, which is not a valid value for BigQuery type array.",
+                            name));
         }
 
         Collection collection;
@@ -178,9 +200,10 @@ public class RowToJson {
         } else if (value instanceof Object[]) {
             collection = Arrays.asList((Object[]) value);
         } else {
-            throw new IllegalArgumentException(String.format(
-                    "A value for the field '%s' is of type '%s' when it is expected to be a Collection or array.",
-                    name, value.getClass().getSimpleName()));
+            throw new IllegalArgumentException(
+                    String.format(
+                            "A value for the field '%s' is of type '%s' when it is expected to be a Collection or array.",
+                            name, value.getClass().getSimpleName()));
         }
 
         SeaTunnelDataType elementType = ((ArrayType) rowType).getElementType();
@@ -191,8 +214,11 @@ public class RowToJson {
 
         for (Object element : collection) {
             if (element == null) {
-                throw new IllegalArgumentException(String.format("Field '%s' contains null values in its array, " +
-                        "which is not allowed.", name));
+                throw new IllegalArgumentException(
+                        String.format(
+                                "Field '%s' contains null values in its array, "
+                                        + "which is not allowed.",
+                                name));
             }
             if (element instanceof SeaTunnelRow) {
                 SeaTunnelRow record = (SeaTunnelRow) element;
@@ -204,24 +230,27 @@ public class RowToJson {
         generator.writeEndArray();
     }
 
-    private static void processRecord(JsonGenerator generator,
-                                      Object object,
-                                      SeaTunnelRowType rowType) throws IOException {
+    private static void processRecord(
+            JsonGenerator generator, Object object, SeaTunnelRowType rowType) throws IOException {
         generator.writeStartObject();
         for (int i = 0; i < rowType.getFieldNames().length; i++) {
             String subFieldName = rowType.getFieldName(i);
             SeaTunnelDataType subFieldType = rowType.getFieldType(i);
-            write(generator, subFieldName, false, ((SeaTunnelRow) object).getField(i), subFieldType);
+            write(
+                    generator,
+                    subFieldName,
+                    false,
+                    ((SeaTunnelRow) object).getField(i),
+                    subFieldType);
         }
         generator.writeEndObject();
     }
 
-    private static void processMap(JsonGenerator generator,
-                                   Object object,
-                                   SeaTunnelDataType rowType) throws IOException {
+    private static void processMap(
+            JsonGenerator generator, Object object, SeaTunnelDataType rowType) throws IOException {
         if (!Objects.equals(SqlType.STRING, ((MapType) rowType).getKeyType().getSqlType())) {
-            throw new GcsConnectorException(CommonErrorCode.UNSUPPORTED_DATA_TYPE,
-                    "Map key type must be STRING");
+            throw new GcsConnectorException(
+                    CommonErrorCode.UNSUPPORTED_DATA_TYPE, "Map key type must be STRING");
         }
         generator.writeStartObject();
         Map<String, ?> mapData = (Map) object;
@@ -232,6 +261,4 @@ public class RowToJson {
         }
         generator.writeEndObject();
     }
-
 }
-

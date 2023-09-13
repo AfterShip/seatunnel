@@ -61,5 +61,4 @@ public interface WriteStrategy extends Serializable {
      * @return the file commit information
      */
     Optional<Void> prepareCommit();
-
 }
