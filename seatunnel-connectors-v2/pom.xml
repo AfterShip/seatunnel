@@ -74,6 +74,8 @@
         <module>connector-rocketmq</module>
         <module>connector-paimon</module>
         <module>connector-bigquery</module>
+        <module>connector-bigtable</module>
+        <module>connector-spanner</module>
     </modules>
 
     <dependencyManagement>

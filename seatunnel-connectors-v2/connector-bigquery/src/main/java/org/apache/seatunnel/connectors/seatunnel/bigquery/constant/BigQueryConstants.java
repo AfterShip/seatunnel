@@ -7,10 +7,9 @@ package org.apache.seatunnel.connectors.seatunnel.bigquery.constant;
  */
 public class BigQueryConstants {
 
-    /**
-     * config center
-     */
+    /** config center */
     public static final String ENVIRONMENT = "environment";
+
     public static final String CONFIG_CENTER_TOKEN = "config_center_token";
     public static final String CONFIG_CENTER_PROJECT = "config_center_project";
     public static final String CONFIG_CENTER_URL = "config_center_url";
