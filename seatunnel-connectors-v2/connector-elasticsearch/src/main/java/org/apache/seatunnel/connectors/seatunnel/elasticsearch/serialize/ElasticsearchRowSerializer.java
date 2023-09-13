@@ -17,25 +17,37 @@
 
 package org.apache.seatunnel.connectors.seatunnel.elasticsearch.serialize;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.seatunnel.api.table.type.SeaTunnelRow;
-import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
-import org.apache.seatunnel.common.exception.CommonErrorCode;
-import org.apache.seatunnel.connectors.seatunnel.elasticsearch.exception.ElasticsearchConnectorErrorCode;
-import org.apache.seatunnel.connectors.seatunnel.elasticsearch.exception.ElasticsearchConnectorException;
 import org.apache.seatunnel.shade.com.fasterxml.jackson.core.JsonGenerator;
 import org.apache.seatunnel.shade.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.seatunnel.shade.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.seatunnel.shade.com.typesafe.config.Config;
 
+import org.apache.seatunnel.api.table.type.SeaTunnelRow;
+import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
+import org.apache.seatunnel.common.exception.CommonErrorCode;
+import org.apache.seatunnel.connectors.seatunnel.elasticsearch.exception.ElasticsearchConnectorErrorCode;
+import org.apache.seatunnel.connectors.seatunnel.elasticsearch.exception.ElasticsearchConnectorException;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.time.temporal.Temporal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.ACTION_TYPE;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.ID_FIELD;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.ID_FIELD_IGNORED;
-import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.*;
-import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.*;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.INDEX;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.INDEX_TYPE;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.WRITE_AS_OBJECT_FIELDS;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.ACTION_TYPE_INDEX;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.INDEX_TYPE_CUSTOMIZE;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.INDEX_TYPE_FIELD;
 
 /** use in elasticsearch version >= 2.x and <= 8.x */
 public class ElasticsearchRowSerializer implements SeaTunnelRowSerializer {
@@ -44,9 +56,7 @@ public class ElasticsearchRowSerializer implements SeaTunnelRowSerializer {
 
     private final Config pluginConfig;
 
-    public ElasticsearchRowSerializer(
-            Config pluginConfig,
-            SeaTunnelRowType seaTunnelRowType) {
+    public ElasticsearchRowSerializer(Config pluginConfig, SeaTunnelRowType seaTunnelRowType) {
         this.pluginConfig = pluginConfig;
         this.seaTunnelRowType = seaTunnelRowType;
     }
@@ -83,7 +93,8 @@ public class ElasticsearchRowSerializer implements SeaTunnelRowSerializer {
             if (StringUtils.isBlank(index)) {
                 throw new ElasticsearchConnectorException(
                         ElasticsearchConnectorErrorCode.BUSINESS_FAILED,
-                        String.format("Index must not be null or empty, index field: %s",
+                        String.format(
+                                "Index must not be null or empty, index field: %s",
                                 pluginConfig.getString(INDEX.key())));
             }
             filterList.add(pluginConfig.getString(INDEX.key()));
@@ -134,27 +145,33 @@ public class ElasticsearchRowSerializer implements SeaTunnelRowSerializer {
     }
 
     private String transform(Map<String, Object> document, List<String> filterList) {
-        List<String> writeAsObjectFields = Arrays.asList((pluginConfig.hasPath(WRITE_AS_OBJECT_FIELDS.key())
-                ? pluginConfig.getString(WRITE_AS_OBJECT_FIELDS.key())
-                : "").split(","));
+        List<String> writeAsObjectFields =
+                Arrays.asList(
+                        (pluginConfig.hasPath(WRITE_AS_OBJECT_FIELDS.key())
+                                        ? pluginConfig.getString(WRITE_AS_OBJECT_FIELDS.key())
+                                        : "")
+                                .split(","));
         StringWriter writer = new StringWriter();
         try (JsonGenerator generator = objectMapper.getFactory().createGenerator(writer)) {
             generator.writeStartObject();
             for (Map.Entry<String, Object> entry : document.entrySet()) {
-                // From all the fields in input record, write only those fields that are present in output schema
+                // From all the fields in input record, write only those fields that are present in
+                // output schema
                 if (entry.getValue() == null || filterList.contains(entry.getKey())) {
                     continue;
                 }
                 boolean writeAsObject = writeAsObjectFields.contains(entry.getKey());
-                RowToJson.write(generator, entry.getKey(), entry.getValue(),
+                RowToJson.write(
+                        generator,
+                        entry.getKey(),
+                        entry.getValue(),
                         seaTunnelRowType.getFieldType(seaTunnelRowType.indexOf(entry.getKey())),
                         writeAsObject);
             }
             generator.writeEndObject();
         } catch (IOException e) {
             throw new ElasticsearchConnectorException(
-                    ElasticsearchConnectorErrorCode.BUSINESS_FAILED,
-                    "transform failed");
+                    ElasticsearchConnectorErrorCode.BUSINESS_FAILED, "transform failed");
         }
         return writer.toString();
     }
@@ -175,7 +192,8 @@ public class ElasticsearchRowSerializer implements SeaTunnelRowSerializer {
             if (StringUtils.isBlank(index)) {
                 throw new ElasticsearchConnectorException(
                         ElasticsearchConnectorErrorCode.BUSINESS_FAILED,
-                        String.format("Index must not be null or empty, index field: %s",
+                        String.format(
+                                "Index must not be null or empty, index field: %s",
                                 pluginConfig.getString(INDEX.key())));
             }
             filterList.add(pluginConfig.getString(INDEX.key()));
@@ -216,5 +234,4 @@ public class ElasticsearchRowSerializer implements SeaTunnelRowSerializer {
         }
         return doc;
     }
-
 }

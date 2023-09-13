@@ -22,7 +22,9 @@ import org.apache.seatunnel.connectors.seatunnel.elasticsearch.dto.Elasticsearch
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.serialize.type.impl.NotIndexTypeSerializer;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.serialize.type.impl.RequiredIndexTypeSerializer;
 
-import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchVersion.*;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchVersion.ES2;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchVersion.ES5;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchVersion.ES6;
 
 public class IndexTypeSerializerFactory {
 

@@ -17,11 +17,12 @@
 
 package org.apache.seatunnel.connectors.seatunnel.elasticsearch.dto;
 
+import org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchVersion;
+
 import com.google.common.base.Strings;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
-import org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchVersion;
 
 @Getter
 @Builder

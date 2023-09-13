@@ -17,7 +17,8 @@
 
 package org.apache.seatunnel.connectors.seatunnel.elasticsearch.sink;
 
-import com.google.auto.service.AutoService;
+import org.apache.seatunnel.shade.com.typesafe.config.Config;
+
 import org.apache.seatunnel.api.common.PrepareFailException;
 import org.apache.seatunnel.api.common.SeaTunnelAPIErrorCode;
 import org.apache.seatunnel.api.sink.SeaTunnelSink;
@@ -28,15 +29,23 @@ import org.apache.seatunnel.api.table.type.SeaTunnelRowType;
 import org.apache.seatunnel.common.config.CheckConfigUtil;
 import org.apache.seatunnel.common.config.CheckResult;
 import org.apache.seatunnel.common.constants.PluginType;
-import org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.exception.ElasticsearchConnectorException;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.state.ElasticsearchAggregatedCommitInfo;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.state.ElasticsearchCommitInfo;
 import org.apache.seatunnel.connectors.seatunnel.elasticsearch.state.ElasticsearchSinkState;
-import org.apache.seatunnel.shade.com.typesafe.config.Config;
 
-import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.*;
-import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.*;
+import com.google.auto.service.AutoService;
+
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.BATCH_NUMBER;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.BATCH_SIZE_MB;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.CLUSTER;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.ID_FIELD;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.INDEX;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.MAX_RETRY_COUNT;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONFIG_CENTER_PROJECT;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONFIG_CENTER_TOKEN;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONFIG_CENTER_URL;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.ENVIRONMENT;
 
 @AutoService(SeaTunnelSink.class)
 public class ElasticsearchSink
@@ -63,17 +72,20 @@ public class ElasticsearchSink
         CheckResult result =
                 CheckConfigUtil.checkAllExists(config, INDEX.key(), ID_FIELD.key(), CLUSTER.key());
 
-        boolean isCredential = config.hasPath(CONFIG_CENTER_TOKEN)
-                && config.hasPath(CONFIG_CENTER_URL)
-                && config.hasPath(ENVIRONMENT)
-                && config.hasPath(CONFIG_CENTER_PROJECT);
+        boolean isCredential =
+                config.hasPath(CONFIG_CENTER_TOKEN)
+                        && config.hasPath(CONFIG_CENTER_URL)
+                        && config.hasPath(ENVIRONMENT)
+                        && config.hasPath(CONFIG_CENTER_PROJECT);
 
         if (isCredential) {
-            result = CheckConfigUtil.checkAllExists(config,
-                    CONFIG_CENTER_TOKEN,
-                    CONFIG_CENTER_URL,
-                    ENVIRONMENT,
-                    CONFIG_CENTER_PROJECT);
+            result =
+                    CheckConfigUtil.checkAllExists(
+                            config,
+                            CONFIG_CENTER_TOKEN,
+                            CONFIG_CENTER_URL,
+                            ENVIRONMENT,
+                            CONFIG_CENTER_PROJECT);
         }
 
         if (!result.isSuccess()) {
@@ -110,6 +122,11 @@ public class ElasticsearchSink
     public SinkWriter<SeaTunnelRow, ElasticsearchCommitInfo, ElasticsearchSinkState> createWriter(
             SinkWriter.Context context) {
         return new ElasticsearchSinkWriter(
-                context, seaTunnelRowType, pluginConfig, maxBatchNumber, maxBatchSizeMb, maxRetryCount);
+                context,
+                seaTunnelRowType,
+                pluginConfig,
+                maxBatchNumber,
+                maxBatchSizeMb,
+                maxRetryCount);
     }
 }

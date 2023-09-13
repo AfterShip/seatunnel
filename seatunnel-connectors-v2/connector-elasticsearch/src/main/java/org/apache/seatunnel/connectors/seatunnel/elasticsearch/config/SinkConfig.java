@@ -77,10 +77,7 @@ public class SinkConfig {
                     .withDescription("one bulk request max try count");
 
     public static final Option<String> CLUSTER =
-            Options.key("cluster")
-                    .stringType()
-                    .noDefaultValue()
-                    .withDescription("cluster of es");
+            Options.key("cluster").stringType().noDefaultValue().withDescription("cluster of es");
 
     public static final Option<Boolean> ID_FIELD_IGNORED =
             Options.key("id_field_ignored")
@@ -93,5 +90,4 @@ public class SinkConfig {
                     .stringType()
                     .noDefaultValue()
                     .withDescription("Write as object fields, split by comma.");
-
 }
