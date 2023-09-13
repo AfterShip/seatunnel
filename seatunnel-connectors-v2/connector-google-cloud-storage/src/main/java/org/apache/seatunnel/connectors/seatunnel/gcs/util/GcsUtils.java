@@ -21,16 +21,16 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 
 import javax.annotation.Nullable;
+
 import java.io.Serializable;
 
 public class GcsUtils implements Serializable {
 
-  public static Storage getStorage(String project, @Nullable Credentials credentials) {
-    StorageOptions.Builder builder = StorageOptions.newBuilder().setProjectId(project);
-    if (credentials != null) {
-      builder.setCredentials(credentials);
+    public static Storage getStorage(String project, @Nullable Credentials credentials) {
+        StorageOptions.Builder builder = StorageOptions.newBuilder().setProjectId(project);
+        if (credentials != null) {
+            builder.setCredentials(credentials);
+        }
+        return builder.build().getService();
     }
-    return builder.build().getService();
-  }
-
 }

@@ -1,16 +1,18 @@
 package org.apache.seatunnel.connectors.seatunnel.gcs.util;
 
-import com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS;
-import com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem;
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.seatunnel.common.exception.CommonErrorCode;
+import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.seatunnel.common.exception.CommonErrorCode;
-import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
+
+import com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS;
+import com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -165,4 +167,3 @@ public class FileSystemUtils implements Serializable {
         return pathList;
     }
 }
-
