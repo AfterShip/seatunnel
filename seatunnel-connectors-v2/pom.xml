@@ -74,7 +74,8 @@
         <module>connector-rocketmq</module>
         <module>connector-paimon</module>
         <module>connector-bigquery</module>
-        <module>connector-google-cloud-storage</module>
+        <module>connector-bigtable</module>
+        <module>connector-spanner</module>
     </modules>
 
     <dependencyManagement>
@@ -130,13 +131,13 @@
                 <module>connector-pulsar</module>
                 <module>connector-socket</module>
                 <module>connector-hive</module>
-                <!--                <module>connector-file</module>-->
+                <module>connector-file</module>
                 <module>connector-hudi</module>
                 <module>connector-assert</module>
                 <module>connector-kudu</module>
                 <module>connector-email</module>
                 <module>connector-dingtalk</module>
-                <!--                <module>connector-elasticsearch</module>-->
+                <module>connector-elasticsearch</module>
                 <module>connector-iotdb</module>
                 <module>connector-neo4j</module>
                 <module>connector-redis</module>
