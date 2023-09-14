@@ -73,8 +73,8 @@
         <module>connector-hbase</module>
         <module>connector-rocketmq</module>
         <module>connector-paimon</module>
-        <module>connector-bigquery</module>
         <module>connector-google-cloud-storage</module>
+        <module>connector-bigquery</module>
     </modules>
 
     <dependencyManagement>
