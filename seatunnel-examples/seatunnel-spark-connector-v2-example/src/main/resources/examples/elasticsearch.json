@@ -17,7 +17,7 @@
     {
       "config_center_url":"http://config-center.automizelyapi.me/api/v1",
       "config_center_environment":"testing",
-      "config_center_token":"cy5iUGVpQXNISVBuUXE5MVp0UjZoem5aS1M=",
+      "config_center_token":"*****",
       "plugin_name":"BigQuery",
       "config_center_project":"dataworks.automizelyapi.org_integration",
       "result_table_name":"bigquery_source",
@@ -45,7 +45,7 @@
       },
       "config_center_url": "https://config-center.automizelyapi.me/api/v1",
       "environment": "testing",
-      "config_center_token": "cy5sOWF5cGQ1UmNPRjBzTzNtSm5EVThxWUg=",
+      "config_center_token": "*****",
       "bulk_size": "100000",
       "source_table_name": "t_0",
       "plugin_name": "Elasticsearch",
