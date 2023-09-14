@@ -79,6 +79,14 @@
         <module>connector-spanner</module>
     </modules>
 
+    <properties>
+        <config-center.version>0.2.0</config-center.version>
+        <google.api.services.storage>v1-rev20230617-2.0.0</google.api.services.storage>
+        <google.cloud.libraries.bom.version>26.1.5</google.cloud.libraries.bom.version>
+        <bigquery.connector.hadoop3.version>hadoop3-1.2.0</bigquery.connector.hadoop3.version>
+        <avro.version>1.11.2</avro.version>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -86,6 +94,38 @@
                 <artifactId>seatunnel-api</artifactId>
                 <version>${project.version}</version>
                 <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>libraries-bom</artifactId>
+                <version>${google.cloud.libraries.bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.apis</groupId>
+                <artifactId>google-api-services-storage</artifactId>
+                <version>${google.api.services.storage}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.automizely.data</groupId>
+                <artifactId>config-center-sdk-java</artifactId>
+                <version>${config-center.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.cloud.bigdataoss</groupId>
+                <artifactId>bigquery-connector</artifactId>
+                <version>${bigquery.connector.hadoop3.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>${avro.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

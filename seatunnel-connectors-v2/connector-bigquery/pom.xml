@@ -17,30 +17,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <bigquery.connector.hadoop3.version>hadoop3-1.2.0</bigquery.connector.hadoop3.version>
         <avro.version>1.11.2</avro.version>
-        <google.cloud.libraries.bom.version>26.1.5</google.cloud.libraries.bom.version>
         <guava.version>31.1-jre</guava.version>
-        <bigquery.version>2.19.1</bigquery.version>
-        <google.cloud.storage.verison>2.15.1</google.cloud.storage.verison>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.google.cloud</groupId>
-                <artifactId>libraries-bom</artifactId>
-                <version>${google.cloud.libraries.bom.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.seatunnel</groupId>
             <artifactId>connector-common</artifactId>
@@ -50,31 +30,26 @@
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-bigquery</artifactId>
-            <!--            <version>${bigquery.version}</version>-->
         </dependency>
 
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-storage</artifactId>
-            <!--            <version>${google.cloud.storage.verison}</version>-->
         </dependency>
 
         <dependency>
             <groupId>com.google.cloud.bigdataoss</groupId>
             <artifactId>bigquery-connector</artifactId>
-            <version>${bigquery.connector.hadoop3.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
-            <version>${avro.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <!--            <version>${guava.version}</version>-->
         </dependency>
 
         <dependency>
