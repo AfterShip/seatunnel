@@ -11,12 +11,7 @@
     <artifactId>connector-spanner</artifactId>
     <name>SeaTunnel : Connectors V2 : Spanner</name>
 
-    <properties>
-        <google.cloud.spanner.version>6.12.5</google.cloud.spanner.version>
-    </properties>
-
     <dependencies>
-
         <dependency>
             <groupId>org.apache.seatunnel</groupId>
             <artifactId>connector-common</artifactId>
@@ -31,9 +26,7 @@
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-spanner</artifactId>
-            <version>${google.cloud.spanner.version}</version>
         </dependency>
-
     </dependencies>
 
     <scm>
