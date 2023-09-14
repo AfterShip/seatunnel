@@ -1,0 +1,55 @@
+{
+  "env": {
+    "execution.parallelism": "1",
+    "spark.master": "local[2]",
+    "spark.executor.memory": "1024m",
+    "spark.driver.memory": "1024m",
+    "spark.driver.cores": "1",
+    "spark.executor.cores": "1",
+    "spark.executor.instances": "1",
+    "spark.hadoop.fs.AbstractFileSystem.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS",
+    "spark.hadoop.google.cloud.auth.service.account.json.keyfile": "/opt/server_account_test.json",
+    "spark.hadoop.fs.gs.project.id": "aftership-dev",
+    "spark.driver.extraClassPath": "/path/to/gcs-connector-hadoop3-2.2.17-shaded.jar",
+    "spark.executor.extraClassPath": "/path/to/gcs-connector-hadoop3-2.2.17-shaded.jar"
+  },
+  "source": [
+    {
+      "plugin_name": "FakeSource",
+      "rows_per_second": "1",
+      "row.num": 16,
+      "parallelism": 2,
+      "schema": {
+        " fields": {
+          "connector_id": "string",
+          "bool_value": "boolean",
+          "int_value": "bigint",
+          "float_value": "double",
+          "string_value": "string",
+          "date_value": "date",
+          "numeric_value": "decimal(30, 8)",
+          "int_array": "array<bigint>",
+          "float_array": "array<double>",
+          "string_array": "array<string>",
+          "created_at": "timestamp",
+          "updated_at": "timestamp"
+        }
+      },
+      "result_table_name": "fake"
+    }
+  ],
+  "transform": [],
+  "sink": [
+    {
+      "plugin_name": "Spanner",
+      "config_center_url": "http://config-center.automizelyapi.me/api/v1",
+      "config_center_environment": "testing",
+      "config_center_token": "*****",
+      "config_center_project": "dataworks.automizelyapi.org_integration",
+      "project_id": "aftership-test",
+      "instance_id": "aftership-test-asea1",
+      "database_id": "data-t-core",
+      "table_id": "dw_seatunnel_source_sink"
+    }
+  ]
+}

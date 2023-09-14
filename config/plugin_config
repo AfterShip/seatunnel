@@ -24,4 +24,8 @@ connector-clickhouse
 connector-elasticsearch
 connector-google-sheets
 connector-bigquery
+connector-gcs
+connector-bigtable
+connector-spanner
+connector-pubsub
 --end--
