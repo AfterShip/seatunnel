@@ -26,6 +26,9 @@
             "table": "bigquery_type_test_v2",
             "temp_bucket": "team-milk-tmp",
             "filter": "1=1",
+            "schema": {
+
+            },
             "sql": "select numeric_test,bignumeric_test,timestamp_test,date_test,datetime_test,record_test,json_test,array_test,int_test,float_test,bool_test,string_test,record_nest from `aftership-dev.temporary.bigquery_type_test_v2` where 1=1"
         }
     ],
