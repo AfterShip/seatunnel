@@ -16,6 +16,7 @@ ENV SPARK_CONF_HOME=${SPARK_HOME}/conf
 ENV GCS_CONNECTOR_HADOOP_VERSION="2.2.12"
 ENV SPARK_METRIC_VERSION="1.0.1"
 ENV GUAVA_VERSION="31.1-jre"
+ENV PROTOBUF_JAVA_VERSION="3.21.9"
 ENV SEATUNNEL_SOURCE="${SEATUNNEL_HOME}/source/"
 ENV SEATUNNEL_DIST="${SEATUNNEL_SOURCE}/seatunnel-dist"
 ENV SEATUNNEL_TOOL="${SEATUNNEL_SOURCE}/tools"
@@ -27,6 +28,9 @@ RUN wget -P ${SPARK_HOME}/jars/ https://nexus.automizely.org/repository/maven-re
 
 RUN rm ${SPARK_HOME}/jars/guava*.jar
 RUN wget -P ${SPARK_HOME}/jars/ https://nexus.automizely.org/repository/maven-central/com/google/guava/guava/${GUAVA_VERSION}/guava-${GUAVA_VERSION}.jar
+
+RUN rm ${SPARK_HOME}/jars/protobuf*.jar
+RUN wget -P ${SPARK_HOME}/jars/ https://nexus.automizely.org/repository/maven-central/com/google/protobuf/protobuf-java/${PROTOBUF_JAVA_VERSION}/protobuf-java-${PROTOBUF_JAVA_VERSION}.jar
 
 RUN mkdir -p ${SEATUNNEL_HOME}
 RUN chmod 755 ${SEATUNNEL_HOME}
