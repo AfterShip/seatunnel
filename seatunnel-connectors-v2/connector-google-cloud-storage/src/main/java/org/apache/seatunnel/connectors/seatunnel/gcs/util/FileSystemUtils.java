@@ -1,6 +1,7 @@
 package org.apache.seatunnel.connectors.seatunnel.gcs.util;
 
 import org.apache.seatunnel.common.exception.CommonErrorCode;
+import org.apache.seatunnel.connectors.seatunnel.common.utils.GCPUtils;
 import org.apache.seatunnel.connectors.seatunnel.gcs.exception.GcsConnectorException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -19,6 +20,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.parquet.avro.AvroReadSupport.READ_INT96_AS_FIXED;
 import static org.apache.parquet.avro.AvroSchemaConverter.ADD_LIST_ELEMENT_RECORDS;
@@ -28,15 +30,25 @@ import static org.apache.parquet.avro.AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE;
 @Slf4j
 public class FileSystemUtils implements Serializable {
     private static final int WRITE_BUFFER_SIZE = 2048;
+    private static String serviceAccount;
     private transient Configuration configuration;
     private String projectId;
 
-    public FileSystemUtils(String projectId) {
+    public FileSystemUtils(String projectId, String serviceAccount) {
         this.projectId = projectId;
+        this.serviceAccount = serviceAccount;
     }
 
     public Configuration getConfiguration(String projectId, String path) {
         Configuration configuration = new Configuration();
+
+        if (serviceAccount != null) {
+            final Map<String, String> authProperties =
+                    GCPUtils.generateAuthProperties(
+                            serviceAccount, GCPUtils.CLOUD_JSON_KEYFILE_PREFIX);
+            authProperties.forEach(configuration::set);
+        }
+
         configuration.set(
                 String.format("fs.gs.impl", "hdfs"), GoogleHadoopFileSystem.class.getName());
         configuration.set("fs.AbstractFileSystem.gs.impl", GoogleHadoopFS.class.getName());
