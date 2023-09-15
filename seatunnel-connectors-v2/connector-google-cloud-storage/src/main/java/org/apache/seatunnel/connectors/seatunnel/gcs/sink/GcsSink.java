@@ -49,6 +49,7 @@ public class GcsSink extends AbstractSimpleSink<SeaTunnelRow, Void> {
     protected FileSystemUtils fileSystemUtils;
     protected WriteStrategy writeStrategy;
     protected JobContext jobContext;
+    private String serviceAccountJson;
 
     @Override
     public String getPluginName() {
@@ -85,7 +86,7 @@ public class GcsSink extends AbstractSimpleSink<SeaTunnelRow, Void> {
                 }
             }
         }
-        String serviceAccountJson =
+        serviceAccountJson =
                 ConfigCenterUtils.getServiceAccountFromConfigCenter(
                         pluginConfig.getString(CONFIG_CENTER_TOKEN.key()),
                         pluginConfig.getString(CONFIG_CENTER_URL.key()),
@@ -112,7 +113,8 @@ public class GcsSink extends AbstractSimpleSink<SeaTunnelRow, Void> {
         this.fileSinkConfig = new FileSinkConfig(pluginConfig, seaTunnelRowType);
         this.writeStrategy =
                 WriteStrategyFactory.of(fileSinkConfig.getFileFormat(), fileSinkConfig);
-        this.fileSystemUtils = new FileSystemUtils(fileSinkConfig.getProjectId());
+        this.fileSystemUtils =
+                new FileSystemUtils(fileSinkConfig.getProjectId(), serviceAccountJson);
         this.writeStrategy.setSeaTunnelRowTypeInfo(seaTunnelRowType);
         this.writeStrategy.setFileSystemUtils(fileSystemUtils);
     }
