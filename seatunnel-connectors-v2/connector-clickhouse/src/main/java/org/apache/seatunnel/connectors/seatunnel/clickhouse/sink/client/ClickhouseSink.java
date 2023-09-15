@@ -115,7 +115,7 @@ public class ClickhouseSink
         boolean isCredential =
                 config.hasPath(ClickHouseConstants.CONFIG_CENTER_TOKEN)
                         && config.hasPath(ClickHouseConstants.CONFIG_CENTER_URL)
-                        && config.hasPath(ClickHouseConstants.ENVIRONMENT)
+                        && config.hasPath(ClickHouseConstants.CONFIG_CENTER_ENVIRONMENT)
                         && config.hasPath(ClickHouseConstants.CONFIG_CENTER_PROJECT);
 
         if (isCredential) {
@@ -124,7 +124,7 @@ public class ClickhouseSink
                             config,
                             ClickHouseConstants.CONFIG_CENTER_TOKEN,
                             ClickHouseConstants.CONFIG_CENTER_URL,
-                            ClickHouseConstants.ENVIRONMENT,
+                            ClickHouseConstants.CONFIG_CENTER_ENVIRONMENT,
                             ClickHouseConstants.CONFIG_CENTER_PROJECT);
         }
 
@@ -147,7 +147,7 @@ public class ClickhouseSink
                 ConfigCenterUtils.getConfigCenterEntries(
                         config.getString(ClickHouseConstants.CONFIG_CENTER_TOKEN),
                         config.getString(ClickHouseConstants.CONFIG_CENTER_URL),
-                        config.getString(ClickHouseConstants.ENVIRONMENT),
+                        config.getString(ClickHouseConstants.CONFIG_CENTER_ENVIRONMENT),
                         config.getString(ClickHouseConstants.CONFIG_CENTER_PROJECT));
 
         String clusterName =

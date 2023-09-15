@@ -16,7 +16,7 @@ public class ElasticsearchConstants {
     public static final String NEW_CA_CLIENT_CRT = "db-ssl.es.%s-new-client.crt";
     public static final String NEW_CA_CLIENT_ROOT_CRT = "db-ssl.es.%s-new-client-ca.crt";
 
-    public static final String ENVIRONMENT = "environment";
+    public static final String CONFIG_CENTER_ENVIRONMENT = "config_center_environment";
     public static final String CONFIG_CENTER_TOKEN = "config_center_token";
     public static final String CONFIG_CENTER_PROJECT = "config_center_project";
     public static final String CONFIG_CENTER_URL = "config_center_url";

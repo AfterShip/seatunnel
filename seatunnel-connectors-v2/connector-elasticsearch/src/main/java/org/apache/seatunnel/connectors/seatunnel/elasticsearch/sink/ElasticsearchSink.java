@@ -42,10 +42,10 @@ import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.Sin
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.ID_FIELD;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.INDEX;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.config.SinkConfig.MAX_RETRY_COUNT;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONFIG_CENTER_ENVIRONMENT;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONFIG_CENTER_PROJECT;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONFIG_CENTER_TOKEN;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONFIG_CENTER_URL;
-import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.ENVIRONMENT;
 
 @AutoService(SeaTunnelSink.class)
 public class ElasticsearchSink
@@ -75,7 +75,7 @@ public class ElasticsearchSink
         boolean isCredential =
                 config.hasPath(CONFIG_CENTER_TOKEN)
                         && config.hasPath(CONFIG_CENTER_URL)
-                        && config.hasPath(ENVIRONMENT)
+                        && config.hasPath(CONFIG_CENTER_ENVIRONMENT)
                         && config.hasPath(CONFIG_CENTER_PROJECT);
 
         if (isCredential) {
@@ -84,7 +84,7 @@ public class ElasticsearchSink
                             config,
                             CONFIG_CENTER_TOKEN,
                             CONFIG_CENTER_URL,
-                            ENVIRONMENT,
+                            CONFIG_CENTER_ENVIRONMENT,
                             CONFIG_CENTER_PROJECT);
         }
 
