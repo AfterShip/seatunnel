@@ -19,8 +19,9 @@ package org.apache.seatunnel.connectors.seatunnel.elasticsearch.config;
 
 import org.apache.seatunnel.api.configuration.Option;
 import org.apache.seatunnel.api.configuration.Options;
+import org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig;
 
-public class SinkConfig {
+public class SinkConfig extends ConfigCenterConfig {
 
     public static final Option<String> INDEX =
             Options.key("index")

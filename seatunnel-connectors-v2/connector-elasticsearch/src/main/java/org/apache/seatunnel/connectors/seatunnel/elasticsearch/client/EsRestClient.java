@@ -87,12 +87,12 @@ import java.util.stream.Collectors;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CA_CLIENT_CRT;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CA_CLIENT_KEY;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CA_CLIENT_ROOT_CRT;
+import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONFIG_CENTER_ENVIRONMENT;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONFIG_CENTER_PROJECT;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONFIG_CENTER_TOKEN;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONFIG_CENTER_URL;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONNECT_REQUEST_TIMEOUT;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.CONNECT_TIMEOUT_MILLIS;
-import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.ENVIRONMENT;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.ES_CLUSTER;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.KEY_STORE_PASSWORD;
 import static org.apache.seatunnel.connectors.seatunnel.elasticsearch.constant.ElasticsearchConstants.MAX_CONN_PER_ROUTE;
@@ -122,7 +122,7 @@ public class EsRestClient {
                 ConfigCenterUtils.getConfigCenterEntries(
                         pluginConfig.getString(CONFIG_CENTER_TOKEN),
                         pluginConfig.getString(CONFIG_CENTER_URL),
-                        pluginConfig.getString(ENVIRONMENT),
+                        pluginConfig.getString(CONFIG_CENTER_ENVIRONMENT),
                         pluginConfig.getString(CONFIG_CENTER_PROJECT));
 
         String cluster = pluginConfig.getString(ES_CLUSTER);

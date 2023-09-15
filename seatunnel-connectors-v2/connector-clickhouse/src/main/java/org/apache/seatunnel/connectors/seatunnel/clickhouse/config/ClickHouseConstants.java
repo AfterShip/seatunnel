@@ -6,7 +6,7 @@ public final class ClickHouseConstants {
     public static final String DB_SSL_ROOT_CRT = "db-ssl.ch.%s-ca.crt";
     public static final String NAME_REFERENCE = "referenceName";
     public static final String NAME_BATCH_SIZE = "batchSize";
-    public static final String ENVIRONMENT = "environment";
+    public static final String CONFIG_CENTER_ENVIRONMENT = "config_center_environment";
     public static final String CONFIG_CENTER_TOKEN = "config_center_token";
     public static final String CONFIG_CENTER_PROJECT = "config_center_project";
     public static final String CONFIG_CENTER_URL = "config_center_url";

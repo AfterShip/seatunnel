@@ -19,34 +19,14 @@ package org.apache.seatunnel.connectors.seatunnel.clickhouse.config;
 
 import org.apache.seatunnel.api.configuration.Option;
 import org.apache.seatunnel.api.configuration.Options;
+import org.apache.seatunnel.connectors.seatunnel.common.config.ConfigCenterConfig;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("checkstyle:MagicNumber")
-public class ClickhouseConfig {
-
-    public static final Option<String> ENVIRONMENT =
-            Options.key("environment")
-                    .stringType()
-                    .noDefaultValue()
-                    .withDescription("eg: production/testing");
-    public static final Option<String> CONFIG_CENTER_URL =
-            Options.key("config_center_url")
-                    .stringType()
-                    .noDefaultValue()
-                    .withDescription("Config center url.");
-    public static final Option<String> CONFIG_CENTER_TOKEN =
-            Options.key("config_center_token")
-                    .stringType()
-                    .noDefaultValue()
-                    .withDescription("Config center token.");
-    public static final Option<String> CONFIG_CENTER_PROJECT =
-            Options.key("config_center_project")
-                    .stringType()
-                    .noDefaultValue()
-                    .withDescription("Config center project name.");
+public class ClickhouseConfig extends ConfigCenterConfig {
 
     /** Bulk size of clickhouse jdbc */
     public static final Option<Integer> BULK_SIZE =
