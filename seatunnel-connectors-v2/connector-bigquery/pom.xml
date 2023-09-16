@@ -15,9 +15,6 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <bigquery.connector.hadoop3.version>hadoop3-1.2.0</bigquery.connector.hadoop3.version>
-        <avro.version>1.11.2</avro.version>
-        <guava.version>31.1-jre</guava.version>
     </properties>
 
     <dependencies>
@@ -40,6 +37,12 @@
         <dependency>
             <groupId>com.google.cloud.bigdataoss</groupId>
             <artifactId>bigquery-connector</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.apis</groupId>
+                    <artifactId>google-api-services-bigquery</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
