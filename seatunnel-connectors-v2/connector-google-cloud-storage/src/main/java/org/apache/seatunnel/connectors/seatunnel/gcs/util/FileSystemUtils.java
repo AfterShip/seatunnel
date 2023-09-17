@@ -32,30 +32,24 @@ import static org.apache.seatunnel.connectors.seatunnel.common.utils.GCPUtils.ge
 @Slf4j
 public class FileSystemUtils implements Serializable {
     private static final int WRITE_BUFFER_SIZE = 2048;
-    private static String serviceAccount;
+    private String serviceAccountJson;
     private transient Configuration configuration;
     private String projectId;
 
     public FileSystemUtils(String projectId, String serviceAccount) {
         this.projectId = projectId;
-        this.serviceAccount = serviceAccount;
+        this.serviceAccountJson = serviceAccount;
     }
 
     public Configuration getConfiguration(String projectId, String path) {
         Configuration configuration = new Configuration();
 
-        boolean flag = true;
-        if (serviceAccount != null) {
-            ServiceAccountCredentials credentials = getGoogleCredentials(serviceAccount);
-            log.info("credentials email: " + credentials.getClientEmail());
-            flag = false;
+        if (serviceAccountJson != null) {
             final Map<String, String> authProperties =
                     GCPUtils.generateAuthProperties(
-                            serviceAccount, GCPUtils.CLOUD_JSON_KEYFILE_PREFIX);
+                            serviceAccountJson, GCPUtils.CLOUD_JSON_KEYFILE_PREFIX);
             authProperties.forEach(configuration::set);
         }
-
-        log.warn("flag: " + flag);
 
         configuration.set(
                 String.format("fs.gs.impl", "hdfs"), GoogleHadoopFileSystem.class.getName());

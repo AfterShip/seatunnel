@@ -113,14 +113,6 @@ public class GcsSink extends AbstractSimpleSink<SeaTunnelRow, Void> {
         this.fileSinkConfig = new FileSinkConfig(pluginConfig, seaTunnelRowType);
         this.writeStrategy =
                 WriteStrategyFactory.of(fileSinkConfig.getFileFormat(), fileSinkConfig);
-
-        String serviceAccountJson =
-                ConfigCenterUtils.getServiceAccountFromConfigCenter(
-                        pluginConfig.getString(CONFIG_CENTER_TOKEN.key()),
-                        pluginConfig.getString(CONFIG_CENTER_URL.key()),
-                        pluginConfig.getString(CONFIG_CENTER_ENVIRONMENT.key()),
-                        pluginConfig.getString(CONFIG_CENTER_PROJECT.key()));
-
         this.fileSystemUtils =
                 new FileSystemUtils(fileSinkConfig.getProjectId(), serviceAccountJson);
         this.writeStrategy.setSeaTunnelRowTypeInfo(seaTunnelRowType);
