@@ -10,7 +10,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS;
 import com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem;
 import lombok.NonNull;
@@ -27,7 +26,6 @@ import static org.apache.parquet.avro.AvroReadSupport.READ_INT96_AS_FIXED;
 import static org.apache.parquet.avro.AvroSchemaConverter.ADD_LIST_ELEMENT_RECORDS;
 import static org.apache.parquet.avro.AvroWriteSupport.WRITE_FIXED_AS_INT96;
 import static org.apache.parquet.avro.AvroWriteSupport.WRITE_OLD_LIST_STRUCTURE;
-import static org.apache.seatunnel.connectors.seatunnel.common.utils.GCPUtils.getGoogleCredentials;
 
 @Slf4j
 public class FileSystemUtils implements Serializable {
