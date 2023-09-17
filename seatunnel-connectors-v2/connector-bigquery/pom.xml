@@ -15,7 +15,7 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <guava.versioin>31.1-jre</guava.versioin>
+        <guava.version>31.1-jre</guava.version>
     </properties>
 
     <dependencies>
@@ -54,7 +54,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>${guava.versioin}</version>
+            <version>${guava.version}</version>
         </dependency>
 
         <dependency>
