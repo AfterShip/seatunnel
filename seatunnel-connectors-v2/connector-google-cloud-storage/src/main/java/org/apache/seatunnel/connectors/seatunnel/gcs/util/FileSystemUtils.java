@@ -74,8 +74,10 @@ public class FileSystemUtils implements Serializable {
         return fileSystem;
     }
 
-    public FSDataOutputStream getOutputStream(@NonNull String outFilePath) throws IOException {
+    public FSDataOutputStream getOutputStream(@NonNull String outFilePath, String outDir)
+            throws IOException {
         FileSystem fileSystem = getFileSystem(outFilePath);
+        checkOutputSpecs(fileSystem, outDir);
         Path path = new Path(outFilePath);
         return fileSystem.create(path, true, WRITE_BUFFER_SIZE);
     }
@@ -97,6 +99,17 @@ public class FileSystemUtils implements Serializable {
                 throw new GcsConnectorException(
                         CommonErrorCode.FILE_OPERATION_FAILED, "delete file " + file + " error");
             }
+        }
+    }
+
+    public void checkOutputSpecs(FileSystem fileSystem, @NonNull String path) throws IOException {
+        if (fileSystem == null) {
+            fileSystem = getFileSystem(path);
+        }
+        if (fileSystem.exists(new Path(path))) {
+            throw new GcsConnectorException(
+                    CommonErrorCode.FILE_OPERATION_FAILED,
+                    "output dir " + path + " already exists, please check it");
         }
     }
 

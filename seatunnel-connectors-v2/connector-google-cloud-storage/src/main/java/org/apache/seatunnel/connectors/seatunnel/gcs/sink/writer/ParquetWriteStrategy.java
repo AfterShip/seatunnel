@@ -187,6 +187,7 @@ public class ParquetWriteStrategy extends AbstractWriteStrategy {
         if (writer == null) {
             Path path = new Path(filePath);
             try {
+                fileSystemUtils.checkOutputSpecs(null, this.transactionDirectory);
                 HadoopOutputFile outputFile =
                         HadoopOutputFile.fromPath(
                                 path,

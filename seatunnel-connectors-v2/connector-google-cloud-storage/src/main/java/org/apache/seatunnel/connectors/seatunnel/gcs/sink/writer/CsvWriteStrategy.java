@@ -86,7 +86,9 @@ public class CsvWriteStrategy extends AbstractWriteStrategy {
             try {
                 BufferedWriter newWriter =
                         new BufferedWriter(
-                                new OutputStreamWriter(fileSystemUtils.getOutputStream(filePath)));
+                                new OutputStreamWriter(
+                                        fileSystemUtils.getOutputStream(
+                                                filePath, this.transactionDirectory)));
                 this.beingWrittenOutputStream.put(filePath, newWriter);
                 return newWriter;
             } catch (IOException e) {

@@ -72,7 +72,10 @@ public class AvroWriteStrategy extends AbstractWriteStrategy {
                 GenericDatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<>(schema);
                 DataFileWriter<GenericRecord> newWriter =
                         new DataFileWriter<>(datumWriter)
-                                .create(schema, fileSystemUtils.getOutputStream(filePath));
+                                .create(
+                                        schema,
+                                        fileSystemUtils.getOutputStream(
+                                                filePath, this.transactionDirectory));
                 this.beingWrittenOutputStream.put(filePath, newWriter);
                 return newWriter;
             } catch (IOException e) {
