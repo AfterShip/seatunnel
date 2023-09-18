@@ -22,7 +22,12 @@ ENV SEATUNNEL_DIST="${SEATUNNEL_SOURCE}/seatunnel-dist"
 ENV SEATUNNEL_TOOL="${SEATUNNEL_SOURCE}/tools"
 
 USER root
-RUN apt-get update && apt-get -y --force-yes install wget && apt-get -y install python3
+RUN mkdir -p ~/.config/pip
+RUN echo -e "[global] \n index-url = https://nexus.automizely.org/repository/pypi/simple" > ~/.config/pip/pip.conf
+RUN echo -e "[[tool.poetry.source]] \n name = 'nexus' \n url = 'https://nexus.automizely.org/repository/pypi/simple' \n default = true" > ~/pyproject.toml
+RUN apt-get update && apt-get -y --force-yes install wget && apt-get -y install python3 python3-pip && apt-get clean
+RUN pip3 install config-center-sdk
+
 RUN wget -P ${SPARK_HOME}/jars/ https://nexus.automizely.org/repository/maven-releases/com/google/cloud/bigdataoss/gcs-connector/hadoop3-${GCS_CONNECTOR_HADOOP_VERSION}/gcs-connector-hadoop3-${GCS_CONNECTOR_HADOOP_VERSION}-shaded.jar
 RUN wget -P ${SPARK_HOME}/jars/ https://nexus.automizely.org/repository/maven-releases/com/automizely/data/data-dw-integration-spark-metric/${SPARK_METRIC_VERSION}/data-dw-integration-spark-metric-${SPARK_METRIC_VERSION}.jar
 
